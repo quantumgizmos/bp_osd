@@ -65,7 +65,7 @@ if(osd_method==0) {
 
 char *bp_osd::bp_decode(char *synd) {
 
-    bp_decode_ms_min_synd(
+    bp_decode_ms(
             H,
             synd,
             channel_prob,
