@@ -1,6 +1,6 @@
 {
-  "hx_filename": "sim_scripts/codes/hgp_mkmn_16_4_6_hx.alist",
-  "lx_filename": "sim_scripts/codes/hgp_mkmn_16_4_6_lx.alist",
+  "hx_filename": "codes/random/mkmn/hgp_mkmn_16_4_6_hx.alist",
+  "lx_filename": "codes/random/mkmn/hgp_mkmn_16_4_6_lx.alist",
   "code_label": "mkmn_16_4_6",
   "input_seed": 666,
   "bit_error_rate": 0.05,

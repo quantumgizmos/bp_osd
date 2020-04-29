@@ -34,10 +34,6 @@ extern "C" {
 #include "sim_util.h"
 
 
-
-
-
-
 int main(int argc, char *argv[])
 {
 
