@@ -20,6 +20,8 @@ The example program to decode a 16_4_6 MKMN code can be run (from the repository
 build/bp_osd_decode sim_scripts/mkmn_input_test.json sim_scripts/output
 ```
 
+The general syntax for running the sim script is as follows
+
 ```
 ./build/bp_osd_decode <path_to_input_file.json> <path_to_output_directory>
 ``` 
