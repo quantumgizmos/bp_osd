@@ -28,8 +28,7 @@ extern "C" {
 #include "mod2sparse_extra.h"
 }
 
-//C++ wrapper for BP OSD
-#include "bp_osd.h"
+#include "bp_osd.h" //C++ wrapper for BP OSD
 #include "setup_mtwister.h"
 #include "sim_util.h"
 
@@ -37,38 +36,47 @@ extern "C" {
 int main(int argc, char *argv[])
 {
 
+    //timing functions setup
     timing time;
     cout<<"Input file: "<<argv[1]<<endl;
     cout<<"Start time: "<<time.start_time_string<<endl;
     int elapsed_seconds;
     elapsed_seconds=time.elapsed_time_seconds();
 
+    //read in json input file
     ifstream json_input_file(argv[1]);
     json json_input;
     json_input_file>>json_input;
     cout<<json_input.dump(1)<<endl;
     json output=json_input;
 
+    //get input file from command line arguments
     output["input_file"]=argv[1];
+
+    //setup random number generator
     int random_seed = json_read_safe(output,"input_seed");
     MTRand r=setup_mtwister_rng(random_seed);
 
+    //save start time
     output["start_time"] = time.start_time_string;
+
+    //generate UI from start time + random seed
     unsigned long long int ui =time.start_time_seconds+random_seed;
     output["ui"]=ui;
 
+    //read in sim parameters
     double bit_error_rate=json_read_safe(json_input,"bit_error_rate");
     int osd_order = json_read_safe(json_input,"osd_order");
+    int max_iter=json_read_safe(json_input,"max_iter");
+    long long unsigned int target_runs=json_read_safe(json_input,"target_runs");
 
+    //read in OSD method and check that it is valid
     string osd_method = json_read_safe(json_input,"osd_method");
     int osd_method_i=-1;
     if(osd_method=="exhaustive") osd_method_i=0;
     else if(osd_method=="combination_sweep") osd_method_i=1;
     else cout<<"ERROR: Invalid OSD method"<<endl;
 
-
-
-    int max_iter=json_read_safe(json_input,"max_iter");
 
     //set up output file
     if(argv[2]==nullptr){
@@ -84,7 +92,7 @@ int main(int argc, char *argv[])
 
 
 
-    //LOADING ALIST FILES
+    //LOAD ALIST FILES
     cout<<"\nLoading alist files"<<endl;
     string temp;
     //Load parity check matrix, hx
@@ -107,31 +115,20 @@ int main(int argc, char *argv[])
 
 
 
-    //Setup BP+OSD for hx and mx
+    //Setup BP+OSD decoder for hx
     bp_osd hx_bp_osd(hx,bit_error_rate,max_iter,osd_order,osd_method_i);
     output["max_iter"]=hx_bp_osd.max_iter;
 
-    //allocate binary strings for simulation
 
-
-
-
-
-
-
-    //sim setup
-
-
-    //MEMORY ALLOCATION
+    //MEMORY ALLOCATION (we can do this now that we know the size of the matrices we are dealing with!)
     double *soft_decisions = new double[hx_n]();
-
     char *bit_error = new char[hx_n]();
     char *bp_decoding = new char[hx_n]();
     char *osd_decoding = new char[hx_n]();
     char *osdw_decoding = new char[hx_n]();
     char *bit_syndrome = new char[hx_m]();
 
-    long long unsigned int target_runs=json_read_safe(json_input,"target_runs");
+    //declarations for various simulation variables
     long long unsigned int bp_converge_count=0;
     long long unsigned int bp_success_count=0;
     long long unsigned int osd0_success_count=0;
@@ -143,7 +140,7 @@ int main(int argc, char *argv[])
     double bp_ler;
 
 
-    //main sim loop
+    //MAIN SIM LOOP
     for(long long unsigned int run_count=1; run_count <= target_runs; run_count++) {
 
         //generate error
@@ -153,6 +150,7 @@ int main(int argc, char *argv[])
             if(bit_error[bit_no]==1) zero_error=false;
         }
 
+        //Skip decoding if generated error is a zero vector.
         if(zero_error) {
             bp_success_count++;
             osd0_success_count++;
@@ -170,7 +168,7 @@ int main(int argc, char *argv[])
             logical_error = check_logical_error(lx, bit_error, osdw_decoding);
             if (!logical_error) osdw_success_count++;
 
-            osdw_decoding = hx_bp_osd.osd0_decoding;
+//            osdw_decoding = hx_bp_osd.osd0_decoding;
             logical_error = check_logical_error(lx, bit_error, hx_bp_osd.osd0_decoding);
             if (!logical_error) osd0_success_count++;
 
@@ -181,10 +179,8 @@ int main(int argc, char *argv[])
             }
         }
 
-        //        meta_error_rate=1.0-meta_success_count / (double(run));
 
-
-
+        //write to output every 3 seconds. Change this as you see fit
         if((time.elapsed_time_seconds()-elapsed_seconds>3) | (run_count==target_runs) ){
 
             //calculate logical error rates
@@ -206,6 +202,7 @@ int main(int argc, char *argv[])
             output["runtime_readable"] = time.elapsed_time_readable();
             cout << "Runs: " << run_count << "; OSDW_LER: " << osdw_ler << "; BP_LER: " << bp_ler<< "; OSD0_LER: " << osd0_ler<< "; Runtime: " << output["runtime_readable"] << endl;
 
+            //command line output
             ofstream output_file(output_filename.str(),ofstream::trunc);
             output_file<<output.dump(1);
             output_file.close();
