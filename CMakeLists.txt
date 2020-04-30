@@ -5,9 +5,9 @@ set(CMAKE_C_STANDARD 11) #set C standard
 project(decoding)
 
 #adding dependencies
-add_subdirectory(libraries/mtwister_rng)
-add_subdirectory(libraries/json_library)
-add_subdirectory(libraries/radford_neal)
+add_subdirectory(include/mtwister_rng)
+add_subdirectory(include/json_library)
+add_subdirectory(include/radford_neal)
 
 # Build BP_OSD library
 include_directories(src)

@@ -18,7 +18,7 @@ build
 *.gch
 *.pch
 
-# Compiled Dynamic libraries
+# Compiled Dynamic include
 *.so
 *.dylib
 *.dll
@@ -27,7 +27,7 @@ build
 *.mod
 *.smod
 
-# Compiled Static libraries
+# Compiled Static include
 *.lai
 *.la
 *.a

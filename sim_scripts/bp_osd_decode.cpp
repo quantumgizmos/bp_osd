@@ -14,7 +14,7 @@
 using json = nlohmann::json;
 using namespace std;
 
-//C libraries
+//C include
 extern "C" {
 #include "mod2sparse.h"
 #include "mod2dense.h"

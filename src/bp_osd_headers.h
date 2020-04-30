@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 
-//C libraries
+//C include
 extern "C" {
 #include "mod2sparse.h"
 #include "mod2dense.h"
