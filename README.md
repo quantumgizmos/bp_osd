@@ -60,3 +60,13 @@ The output is saved to the directory specified in the second command line argume
 ## Alist files
 
 Alist files for the Surface and Toric codes can be found in the "codes" directory.
+
+## Using this library in another project
+
+To use this library in another project copy and past the repository into your project root. The library can then be imported by adding the followig to your cmake file:
+```c
+project(import_example)
+add_subdirectory(bp_osd_c)
+add_executable(import_example main.cpp)
+target_link_libraries(import_example bp_osd)
+```
