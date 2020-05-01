@@ -54,7 +54,7 @@ class timing {
         int runtime_hours=delta_time/3600;
         int runtime_minutes=(delta_time % 3600)/60;
         int runtime_seconds=(delta_time % 3600)%60;
-        sprintf(runtime,"%ih:%im:%is       ",runtime_hours,runtime_minutes,runtime_seconds);
+        sprintf(runtime,"%ih:%im:%is",runtime_hours,runtime_minutes,runtime_seconds);
 
 //        cout<<"Runtime: " <<diff_time<<endl;
 
