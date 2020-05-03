@@ -36,6 +36,17 @@ extern "C" {
 int main(int argc, char *argv[])
 {
 
+    if(argv[1]==nullptr){
+        cout<<"ERROR: Please provide a location for the input directory"<<endl;
+        exit(22);
+    };
+
+    if(argv[2]==nullptr){
+        cout<<"ERROR: Please provide a location for the output directory"<<endl;
+        exit(22);
+    };
+
+
     //timing functions setup
     timing time;
     cout<<"Input file: "<<argv[1]<<endl;
@@ -79,10 +90,6 @@ int main(int argc, char *argv[])
 
 
     //set up output file
-    if(argv[2]==nullptr){
-        cout<<"ERROR: Please provide a location for the output directory"<<endl;
-        exit(22);
-    };
     string p_label =to_string(bit_error_rate);
     replace( p_label.begin(), p_label.end(), '.', '_');
     string label =output["code_label"];
@@ -94,12 +101,8 @@ int main(int argc, char *argv[])
 
     //LOAD ALIST FILES
     cout<<"\nLoading alist files"<<endl;
-    string temp;
-    //Load parity check matrix, hx
-//    temp=json_read_safe(json_input,"hx_filename"); char *hx_filename= const_cast<char*> (temp.c_str());
-//    cout<<hx_filename<<endl;
-//    mod2sparse *hx=load_alist(hx_filename);
 
+    //load hx parity check matrix
     mod2sparse *hx=load_alist_cpp(json_read_safe(json_input,"hx_filename"));
     int hx_m=mod2sparse_rows(hx);
     int hx_n=mod2sparse_cols(hx);
