@@ -59,3 +59,11 @@ int check_logical_error(mod2sparse *l,char *orig_error,char *decoding){
 
 }
 
+mod2sparse *load_alist_cpp(string filename){
+    char *pcm_filename= const_cast<char*> (filename.c_str());
+    cout<<"Loading '"<<pcm_filename<<"'"<<endl;
+    mod2sparse *pcm=load_alist(pcm_filename);
+    return pcm;
+}
+
+

@@ -96,18 +96,18 @@ int main(int argc, char *argv[])
     cout<<"\nLoading alist files"<<endl;
     string temp;
     //Load parity check matrix, hx
-    temp=json_read_safe(json_input,"hx_filename"); char *hx_filename= const_cast<char*> (temp.c_str());
-    cout<<hx_filename<<endl;
-    mod2sparse *hx=load_alist(hx_filename);
+//    temp=json_read_safe(json_input,"hx_filename"); char *hx_filename= const_cast<char*> (temp.c_str());
+//    cout<<hx_filename<<endl;
+//    mod2sparse *hx=load_alist(hx_filename);
+
+    mod2sparse *hx=load_alist_cpp(json_read_safe(json_input,"hx_filename"));
     int hx_m=mod2sparse_rows(hx);
     int hx_n=mod2sparse_cols(hx);
     output["hx_n"]=hx_n;
     output["hx_m"]=hx_m;
 
     //load logical check matrix, lx
-    temp=json_read_safe(json_input,"lx_filename"); char *lx_filename= const_cast<char*> (temp.c_str());
-    cout<<lx_filename<<endl;
-    mod2sparse *lx=load_alist(lx_filename);
+    mod2sparse *lx=load_alist_cpp(json_read_safe(json_input,"lx_filename"));
     int lx_k=mod2sparse_rows(lx);
     int lx_n=mod2sparse_cols(lx);
     output["lx_n"]=lx_n;
