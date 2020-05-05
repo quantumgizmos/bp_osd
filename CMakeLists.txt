@@ -22,6 +22,8 @@ set(LIB_FILES ${LIB_FILES} src/sim_util.cpp src/sim_util.h)
 set(LIB_FILES ${LIB_FILES} src/timing.cpp src/timing.h)
 set(LIB_FILES ${LIB_FILES} src/sort.c src/sort.h)
 set(LIB_FILES ${LIB_FILES} src/osd_0.c src/osd_0.h)
+set(LIB_FILES ${LIB_FILES} src/osd_w.c src/osd_w.h)
+
 
 add_library(bp_osd ${LIB_FILES})
 target_link_libraries(bp_osd json_library radford_neal mtwister_rng)

@@ -11,7 +11,7 @@ class bp_osd {
     public:
         mod2sparse *H;
 
-        int M,N,rank;
+        int M,N,rank,K;
 
         double *log_prob_ratios;
         double channel_prob;
@@ -29,6 +29,9 @@ class bp_osd {
         char *osdw_decoding;
 
         osd_struct *osd_data;
+
+        char **osd_w_encoding_inputs;
+        int encoding_input_count;
 
 
 

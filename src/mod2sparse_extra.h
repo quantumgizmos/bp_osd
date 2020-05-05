@@ -2,7 +2,7 @@
 void mod2sparse_print_terminal (mod2sparse *A);
 int mod2sparse_rank(mod2sparse *A);
 
-void lu_forward_backward_solve
+void LU_forward_backward_solve
         (mod2sparse *L,
          mod2sparse *U,
          int *rows,

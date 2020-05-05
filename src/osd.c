@@ -183,7 +183,7 @@ osd_struct *create_osd_e_struct(mod2sparse *H, int w, int k)
     }
 
 
-      lu_forward_backward_solve
+      LU_forward_backward_solve
               (L,
                U,
                rows,
@@ -269,7 +269,7 @@ osd_struct *create_osd_e_struct(mod2sparse *H, int w, int k)
             // printf("\n");
             bin_char_add(synd,Htx,g,M);
 
-              lu_forward_backward_solve(L, U, rows, cols, g, y);
+              LU_forward_backward_solve(L, U, rows, cols, g, y);
 
 
             for(int col_no=0;col_no<k;col_no++)
@@ -424,7 +424,7 @@ int osd_cs
     }
 
 
-      lu_forward_backward_solve
+      LU_forward_backward_solve
               (L,
                U,
                rows,
@@ -513,7 +513,7 @@ int osd_cs
 
       mod2sparse_mulvec(Ht,test_x,Htx);
       bin_char_add(synd,Htx,g,M);
-        lu_forward_backward_solve(L, U, rows, cols, g, y);
+        LU_forward_backward_solve(L, U, rows, cols, g, y);
 
                 for(int col_no=0;col_no<k;col_no++)
                       {
@@ -562,7 +562,7 @@ int osd_cs
 
       mod2sparse_mulvec(Ht,test_x,Htx);
       bin_char_add(synd,Htx,g,M);
-          lu_forward_backward_solve(L, U, rows, cols, g, y);
+          LU_forward_backward_solve(L, U, rows, cols, g, y);
 
                 for(int col_no=0;col_no<k;col_no++)
                       {

@@ -32,9 +32,6 @@ int osd_0(
     int *rows=chk_alloc(M,sizeof(*rows));
 
 
-
-
-
     osd_0_solve(
             A,
             L,
@@ -116,7 +113,7 @@ int osd_0(
 
       }
 
-      lu_forward_backward_solve(
+      LU_forward_backward_solve(
               L,
               U,
               rows,
