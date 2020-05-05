@@ -38,37 +38,14 @@ osd_struct *create_osd_cs_struct(mod2sparse *H, int w);
 
 
 
-int mod2sparse_decomp_osd
-( mod2sparse *A,	/* Input matrix, M by N */
-  int R,		/* Size of sub-matrix to find LU decomposition of */
-  mod2sparse *L,	/* Matrix in which L is stored, M by R */
-  mod2sparse *U,	/* Matrix in which U is stored, R by N */
-  int *rows,		/* Array where row indexes are stored, M long */
-  int *cols,		/* Array where column indexes are stored, N long */
-  mod2sparse_strategy strategy, /* Strategy to follow in picking rows/columns */
-  int abandon_number,	/* Number of columns to abandon at some point */
-  int abandon_when	/* When to abandon these columns */
-);
 
-// void osd_0
-// ( mod2sparse *A,	/* Input matrix, M by N */
-//   char *synd,
-//   double *log_prob_ratios,
-//   int R,		/* Size of sub-matrix to find LU decomposition of */
-//   char *decoding,
-//   int *rows,		/* Array where row indexes are stored, M long */
-//   int *cols,		/* Array where column indexes are stored, N long */
-//   mod2sparse_strategy strategy, /* Strategy to follow in picking rows/columns */
-//   int abandon_number,	/* Number of columns to abandon at some point */
-//   int abandon_when	/* When to abandon these columns */
-// );
 
 
 int osd_e
 ( mod2sparse *A,	/* Input matrix, M by N */
   char *synd,
   double *log_prob_ratios,
-  int R,		/* Size of sub-matrix to find LU decomposition of */
+  int A_rank,		/* Size of sub-matrix to find LU decomposition of */
   osd_struct *osd_data
 );
 
@@ -88,10 +65,3 @@ int osd_e
 
 
 
-void LU_solve_osd
-(mod2sparse *L,
-mod2sparse *U,
-int *rows,
-int *cols,
-char *z,
-char *x);

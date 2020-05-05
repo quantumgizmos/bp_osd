@@ -37,7 +37,7 @@ class bp_osd {
         char *bp_decode(char *synd);
         char *bp_osd_decode(char *synd);
         char *osd_post_process(double *, char *);
-        void test();
+        void test_correct_synd(char *decoding, char *synd);
 
 
 };

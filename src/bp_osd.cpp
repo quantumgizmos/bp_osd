@@ -8,6 +8,7 @@
 #include <vector>
 #include<iostream>
 #include <cstring>
+#include <assert.h>
 
 //C include
 extern "C" {
@@ -21,6 +22,7 @@ extern "C" {
 #include "bp_decoder_ms.h"
 #include "osd.h"
 #include "mod2sparse_extra.h"
+#include "osd_0.h"
 }
 
 #include "bp_osd.h"
@@ -57,6 +59,7 @@ if(osd_method==0) {
     else if(osd_method==1){
         this->osd_data=create_osd_cs_struct(H,osd_order);
     }
+    else if(osd_method==2) 1;
     else{
         cout<<"ERROR. Function <bp_osd::constructor>. OSD Method not valid"<<endl;
     }
@@ -90,6 +93,7 @@ char *bp_osd::osd_post_process(double *soft_decisions, char *synd){
 
     if(osd_method==0) osd_e(H,synd,soft_decisions,rank,osd_data);
     else if(osd_method==1) osd_cs(H,synd,soft_decisions,rank,osd_data);
+    else if(osd_method==2) osd_0(H,synd,osd0_decoding,soft_decisions,rank);
     else {
         cout << "ERROR. <Function bp_osd::osd_post_process>. Invalid OSD method!" << endl;
         exit(22);
@@ -115,21 +119,30 @@ char *bp_osd::bp_osd_decode(char *synd) {
 
     if(osd_method==0) osd_e(H,synd,log_prob_ratios,rank,osd_data);
     else if(osd_method==1) osd_cs(H,synd,log_prob_ratios,rank,osd_data);
+    else if(osd_method==2){
+        osd_0(H,synd,osd0_decoding,log_prob_ratios,rank);
+        osdw_decoding=osd0_decoding;
+    }
     else {
         cout << "ERROR. <Function bp_osd::bp_osd_decode>. Invalid OSD method!" << endl;
         exit(22);
     }
 
-    osd0_decoding=osd_data[0].decoding;
-    osdw_decoding=osd_data[1].decoding;
+//    test_correct_synd(osd0_decoding,synd);
+//    test_correct_synd(osdw_decoding,synd);
+
+//    osd0_decoding=osd_data[0].decoding;
+//    osdw_decoding=osd_data[1].decoding;
 
     return osdw_decoding;
 
 }
 
-void bp_osd::test(){
-    printf("\nTest");
-    for(int i=0; i<N;i++){printf("%i",bp_decoding[i]);}
-
+void bp_osd::test_correct_synd(char *decoding, char *synd){
+    char *test_synd=new char[M]();
+//    cout<<"testing"<<endl;
+    syndrome(H,decoding,test_synd);
+    assert(bin_char_equal(synd,test_synd,M)==1);
+    delete[] test_synd;
 }
 
