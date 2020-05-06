@@ -34,9 +34,3 @@ set(PROJECT bp_osd_decode)
 project(${PROJECT})
 add_executable(${PROJECT} sim_scripts/bp_osd_decode.cpp)
 target_link_libraries(${PROJECT} bp_osd)
-
-## Build the project files
-set(PROJECT bp_osd_decode_test)
-project(${PROJECT})
-add_executable(${PROJECT} sim_scripts/bp_osd_decode_test.cpp)
-target_link_libraries(${PROJECT} bp_osd)

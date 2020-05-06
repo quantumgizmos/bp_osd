@@ -84,9 +84,19 @@ int main(int argc, char *argv[])
     //read in OSD method and check that it is valid
     string osd_method = json_read_safe(json_input,"osd_method");
     int osd_method_i=-1;
-    if(osd_method=="exhaustive") osd_method_i=0;
-    else if(osd_method=="combination_sweep") osd_method_i=1;
+    if((osd_method=="exhaustive")||(osd_method=="osd_e")) osd_method_i=0;
+    else if((osd_method=="combination_sweep")||(osd_method=="osd_cs")) osd_method_i=1;
+    else if(osd_method=="osd_0"){
+        osd_method_i=2;
+        output["osd_order"]=0;
+    }
     else cout<<"ERROR: Invalid OSD method"<<endl;
+
+    if(osd_order==0){
+        osd_method="osd_e";
+        output["osd_method"]=osd_method;
+        osd_method_i=2;
+    }
 
 
     //set up output file
@@ -121,6 +131,7 @@ int main(int argc, char *argv[])
     //Setup BP+OSD decoder for hx
     bp_osd hx_bp_osd(hx,bit_error_rate,max_iter,osd_order,osd_method_i);
     output["max_iter"]=hx_bp_osd.max_iter;
+    output["osdw_encoding_operator_count"]=hx_bp_osd.encoding_input_count;
 
 
     //MEMORY ALLOCATION (we can do this now that we know the size of the matrices we are dealing with!)
@@ -141,6 +152,7 @@ int main(int argc, char *argv[])
     double osdw_ler;
     double osd0_ler;
     double bp_ler;
+
 
 
     //MAIN SIM LOOP
