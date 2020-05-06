@@ -55,6 +55,7 @@ int osd_w(
             A_rank,
             1);
 
+    //create the H_T matrix
     for(int col_no=0;col_no<k;col_no++){
         Ht_cols[col_no]=cols[col_no + A_rank];
     }
@@ -103,10 +104,8 @@ int osd_w(
 
     return 0;
 
-
-
-
 }
+
 
 
 

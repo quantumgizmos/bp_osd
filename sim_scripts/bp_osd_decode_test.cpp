@@ -91,7 +91,12 @@ int main(int argc, char *argv[])
         output["osd_order"]=0;
     }
     else cout<<"ERROR: Invalid OSD method"<<endl;
-    if(osd_order==0) osd_method=2;
+
+    if(osd_order==0){
+        osd_method="osd_e";
+        output["osd_method"]=osd_method;
+        osd_method_i=2;
+    }
 
 
     //set up output file
@@ -126,6 +131,7 @@ int main(int argc, char *argv[])
     //Setup BP+OSD decoder for hx
     bp_osd hx_bp_osd(hx,bit_error_rate,max_iter,osd_order,osd_method_i);
     output["max_iter"]=hx_bp_osd.max_iter;
+    output["osdw_encoding_operator_count"]=hx_bp_osd.encoding_input_count;
 
 
     //MEMORY ALLOCATION (we can do this now that we know the size of the matrices we are dealing with!)

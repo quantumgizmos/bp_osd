@@ -66,10 +66,9 @@ bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_orde
             osd_w_encoding_inputs[i] = decimal_to_binary_reverse(i, N - rank);
         }
     else if(osd_method==1){
+        assert(osd_order<=K);
         int total_count=0;
         int w2_count=ncr(osd_order,2);
-//        cout<<w2_count<<endl;
-//        cout<<K<<endl;
         this->encoding_input_count = K+w2_count;
 
         this->osd_w_encoding_inputs = new char*[encoding_input_count];
@@ -177,8 +176,8 @@ char *bp_osd::bp_osd_decode(char *synd) {
         exit(22);
     }
 
-    test_correct_synd(osd0_decoding,synd);
-    test_correct_synd(osdw_decoding,synd);
+//    test_correct_synd(osd0_decoding,synd);
+//    test_correct_synd(osdw_decoding,synd);
 
 //    osd0_decoding=osd_data[0].decoding;
 //    osdw_decoding=osd_data[1].decoding;

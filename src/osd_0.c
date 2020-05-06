@@ -14,6 +14,7 @@
 #include "sort.h"
 #include "osd_0.h"
 
+//This function is a wrapper for osd_0_solve (see below)
 int osd_0(
         mod2sparse *A,
         char *synd,
@@ -66,7 +67,6 @@ int osd_0(
           int A_rank,
           int post_processing) {
 
-
       int M = mod2sparse_rows(A);
       int N = mod2sparse_cols(A);
       int k = N - A_rank;
@@ -89,6 +89,7 @@ int osd_0(
                cols        /* Array where column indexes are stored, N long */
               );
 
+      //this next step is necessary to ensure the bits outside of the info set are ordered according to the soft decisions. The decomp function scrambles them!
       if(post_processing==1) {
           //sort the bits outside the info set
           int check;
@@ -113,6 +114,7 @@ int osd_0(
 
       }
 
+      //solve the syndrome equation using forwards/backwards substitution
       LU_forward_backward_solve(
               L,
               U,
@@ -122,6 +124,7 @@ int osd_0(
               osd0_decoding);
 
 
+      //cleanup
       free(orig_cols);
 
   }
