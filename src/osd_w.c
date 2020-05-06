@@ -71,7 +71,7 @@ int osd_w(
 
     /*Search through the encoding strings*/
     int solution_weight;
-    for(int j=0; j<encoding_input_count;j++){
+    for(long unsigned int j=0; j<encoding_input_count;j++){
 
         x=encoding_operator_inputs[j];
         mod2sparse_mulvec(Ht,x,Htx);

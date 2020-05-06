@@ -57,10 +57,12 @@ bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_orde
     this->converge=new int[1]();
     this->iter=new int[1]();
 
-    int encoding_input_count;
     if(osd_method==0) {
         assert(osd_order<=N-rank);
         this->encoding_input_count=pow(2,osd_order);
+
+        cout<<this->encoding_input_count<<endl;
+
         this->osd_w_encoding_inputs = new char*[encoding_input_count];
         for(int i = 0; i < encoding_input_count; ++i)
             osd_w_encoding_inputs[i] = decimal_to_binary_reverse(i, N - rank);

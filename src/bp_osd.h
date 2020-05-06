@@ -31,7 +31,7 @@ class bp_osd {
         osd_struct *osd_data;
 
         char **osd_w_encoding_inputs;
-        int encoding_input_count;
+        long unsigned int encoding_input_count;
 
 
 

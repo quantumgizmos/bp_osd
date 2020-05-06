@@ -1,11 +1,11 @@
 {
-  "hx_filename": "codes/random/mkmn/hgp_mkmn_16_4_6_hx.alist",
-  "lx_filename": "codes/random/mkmn/hgp_mkmn_16_4_6_lx.alist",
-  "code_label": "mkmn_16_4_6",
+  "hx_filename": "codes/random/qcldpc/qldpc_20_5_6_hx.alist",
+  "lx_filename": "codes/random/qcldpc/qldpc_20_5_6_lx.alist",
+  "code_label": "qldpc_20_5_6",
   "input_seed": 666,
   "bit_error_rate": 0.05,
   "target_runs": 1000,
-  "osd_order": 10,
-  "max_iter": 50,
-  "osd_method": "osd_e"
+  "osd_order": 100,
+  "max_iter": 0,
+  "osd_method": "osd_cs"
 }
