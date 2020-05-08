@@ -36,7 +36,7 @@ class bp_osd {
 
 
     bp_osd(mod2sparse *H,double channel_prob, int max_iter=0, double osd_order=10, int osd_method=0); //constructor
-    bp_osd(); // default constructor
+    bp_osd(); // empty constructor
 
         char *bp_decode(char *synd);
         char *bp_osd_decode(char *synd);
