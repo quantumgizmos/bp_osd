@@ -32,6 +32,7 @@ extern "C" {
 
 using namespace std;
 
+bp_osd::bp_osd() {};
 
 bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_order,int osd_method){
 
@@ -61,7 +62,7 @@ bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_orde
         assert(osd_order<=N-rank);
         this->encoding_input_count=pow(2,osd_order);
 
-        cout<<this->encoding_input_count<<endl;
+        // cout<<this->encoding_input_count<<endl;
 
         this->osd_w_encoding_inputs = new char*[encoding_input_count];
         for(int i = 0; i < encoding_input_count; ++i)

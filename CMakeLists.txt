@@ -11,7 +11,7 @@ add_subdirectory(include/radford_neal)
 
 # Build BP_OSD library
 #include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(LIB_FILES ${LIB_FILES} src/bp_decoder_ms.h src/bp_decoder_ms.c)
+set(LIB_FILES src/bp_decoder_ms.h src/bp_decoder_ms.c)
 set(LIB_FILES ${LIB_FILES} src/syndrome.h src/syndrome.c)
 set(LIB_FILES ${LIB_FILES} src/binary_char.h src/binary_char.c)
 set(LIB_FILES ${LIB_FILES} src/mod2sparse_extra.h src/mod2sparse_extra.c)
