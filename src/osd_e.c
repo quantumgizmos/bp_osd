@@ -12,9 +12,9 @@
 #include "syndrome.h"
 #include "sort.h"
 #include "osd_0.h"
-#include "osd_w.h"
+#include "osd_e.h"
 
-int osd_w(
+int osd_e(
         mod2sparse *A,
         char *synd,
         char *osd0_decoding,

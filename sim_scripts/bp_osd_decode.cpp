@@ -71,7 +71,11 @@ int main(int argc, char *argv[])
         osd_method_i=2;
         output["osd_order"]=0;
     }
-    else cout<<"ERROR: Invalid OSD method"<<endl;
+    else if(osd_method=="osd_cs_test") osd_method_i=3;
+    else{
+        cout<<"ERROR: Invalid OSD method: "<<osd_method<<endl;
+        exit(22);
+    }
 
     if(osd_order==0){
         osd_method="osd_e";
