@@ -7,7 +7,6 @@
 
 #include "alloc.h"
 #include "mod2sparse.h"
-#include "osd.h"
 #include "mod2sparse_extra.h"
 #include "binary_char.h"
 #include "syndrome.h"
@@ -45,7 +44,7 @@ int osd_0(
             A_rank,
             0);
 
-
+    //cleanup
     mod2sparse_free(L);
     mod2sparse_free(U);
     free(rows);

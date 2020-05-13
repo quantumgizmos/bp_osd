@@ -1,7 +1,6 @@
 //
 // Created by joschka on 09/02/2020.
 //
-
 #ifndef MATCHINGBP_BP_OSD_H
 #define MATCHINGBP_BP_OSD_H
 
@@ -27,8 +26,6 @@ class bp_osd {
         char *bp_decoding;
         char *osd0_decoding;
         char *osdw_decoding;
-
-        osd_struct *osd_data;
 
         char **osd_w_encoding_inputs;
         long unsigned int encoding_input_count;

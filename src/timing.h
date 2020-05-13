@@ -2,8 +2,8 @@
 // Created by joschka on 16/03/2020.
 //
 
-#ifndef JOSCHKA_SINGLE_SHOT_TEST_TIMING_H
-#define JOSCHKA_SINGLE_SHOT_TEST_TIMING_H
+#ifndef TIMING_H
+#define TIMING_H
 
 #include <iostream>
 #include <stdio.h>
@@ -69,4 +69,4 @@ class timing {
 };
 
 
-#endif //JOSCHKA_SINGLE_SHOT_TEST_TIMING_H
+#endif //TIMING_H

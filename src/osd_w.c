@@ -7,7 +7,6 @@
 
 #include "alloc.h"
 #include "mod2sparse.h"
-#include "osd.h"
 #include "mod2sparse_extra.h"
 #include "binary_char.h"
 #include "syndrome.h"

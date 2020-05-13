@@ -18,15 +18,13 @@
 #include "binary_char.h"
 
 
-
-
 double log_prob_ratio_initial;
 
 void bp_setup_ms(mod2sparse *H,
-double error_prob,
-double *log_prob_ratios,
-char *decoding)
-{
+    double error_prob,
+    double *log_prob_ratios,
+    char *decoding)
+    {
 
   mod2entry *e;
   int N;
@@ -52,11 +50,11 @@ char *decoding)
 }
 
 void bp_update_ms(mod2sparse *H,
-char *synd,
-double *log_prob_ratios,
-int iter,
-char *decoding)
-{
+    char *synd,
+    double *log_prob_ratios,
+    int iter,
+    char *decoding)
+    {
 
   double pr, dR,nX,dX;
   mod2entry *e;
@@ -72,22 +70,15 @@ char *decoding)
   M = mod2sparse_rows(H);
   N = mod2sparse_cols(H);
 
- char *temp_synd;
- char *temp_dec;
+  char *temp_synd;
+  char *temp_dec;
 
- iter++;
+  iter++;
 
- alpha=1.0 - pow(2.0,  (-1*(double) iter)/1  );
-//  alpha=0.625;
-//  printf("\n alpha: %.100lf\n",alpha);
+  alpha=1.0 - pow(2.0,  (-1*(double) iter)/1  );
 
 
-
-  // printf("Log_prob_ratio_initial: %lf\n", log_prob_ratio_initial);
-
-
-  /* Recompute likelihood ratios. */
-
+ /* Recompute likelihood ratios. */
   for (i = 0; i<M; i++)
   { 
     
@@ -121,43 +112,20 @@ char *decoding)
         if(e->pr <= 0) mod2row_weight++;
       }
 
-    
-    // printf("mod2row_weight %i: %lf\n", i,mod2row_weight);
-
     for (e = mod2sparse_last_in_row(H,i);
          !mod2sparse_at_end(e);
          e = mod2sparse_prev_in_row(e))
-      { 
-        
-        
+      {
         if(e->pr <= 0) sgn=sgn+ mod2row_weight;
         else sgn=mod2row_weight;
 
         sgn=pow(-1,sgn);
-
-        if (fabs(e->pr)==min1)
-            {        
-                e->lr=alpha*sgn*min2;
-                // printf("%lf ",e->lr);
-                // printf("%lf\n",min2);
-                // exit(1);
-
-            }
-        else
-            {
-                e->lr=alpha*sgn*min1;
-                // printf("%lf ",e->lr);
-                // printf("%lf\n",min1);
-                // exit(1);
-            }
-
-
-
-        // printf("llr: %lf\n",e->lr);
+        if (fabs(e->pr)==min1) e->lr=alpha*sgn*min2;
+        else e->lr=alpha*sgn*min1;
 
       }
 
-    // printf("\n");
+
 
 
 
@@ -176,8 +144,6 @@ char *decoding)
         }
       log_prob_ratios[j]=pr;
 
-      // printf("log_prob_ratio %i: %lf:\n", j, log_prob_ratios[j]);
-
       decoding[j] = pr<=0;
 
       for (e = mod2sparse_last_in_col(H,j);
@@ -185,15 +151,9 @@ char *decoding)
           e = mod2sparse_prev_in_col(e))
         {
           e->pr = pr-(e->lr);
-          // printf("logQ: %lf\n", e->pr);
 
         }
     }
-
-    // printf("\nLPRs: ");
-    // for(int bit=0;bit<N;bit++) printf("%lf ",log_prob_ratios[bit]);
-    // printf("\n\n ");
-
 
 }
 
@@ -303,18 +263,7 @@ int bp_decode_ms_min_synd(
             hamming_weight_min=hamming_weight;
             memcpy(log_prob_ratios_save,log_prob_ratios,N*sizeof(*log_prob_ratios));
             decreased=1;
-//            printf("%i\n",it);
         }
-//        else if((hamming_weight<synd_weight)&&(hamming_weight>hamming_weight_min)) {
-//
-//            memcpy(log_prob_ratios,log_prob_ratios_save,N*sizeof(*log_prob_ratios));
-//            free(candidate_synd);
-//            free(log_prob_ratios_save);
-//            *iter=it;
-//            *converge=0;
-//            return 0;
-//
-//        }
 
     }
 

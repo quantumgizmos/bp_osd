@@ -7,30 +7,11 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <json.hpp>
-#include "timing.h"
-#include "json_util.h"
 
-using json = nlohmann::json;
+#include "bp_osd_c.hpp"
 using namespace std;
 
-//C include
-extern "C" {
-#include "mod2sparse.h"
-#include "mod2dense.h"
-#include "mod2convert.h"
-#include "load_alist.h"
-#include "syndrome.h"
-#include "binary_char.h"
-#include "bp_decoder_ms.h"
-#include "osd.h"
-#include "mtwister.h"
-#include "mod2sparse_extra.h"
-}
 
-#include "bp_osd.h" //C++ wrapper for BP OSD
-#include "setup_mtwister.h"
-#include "sim_util.h"
 
 
 int main(int argc, char *argv[])

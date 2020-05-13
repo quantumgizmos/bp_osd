@@ -2,15 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
 #include "sort.h"
-
 #include "alloc.h"
-//#include "mod2sparse.h"
-//#include "osd.h"
-//#include "mod2sparse_extra.h"
-//#include "binary_char.h"
-//#include "syndrome.h"
+
 
 
 // Factorial function:

@@ -21,7 +21,6 @@ extern "C" {
 #include "syndrome.h"
 #include "binary_char.h"
 #include "bp_decoder_ms.h"
-#include "osd.h"
 #include "mod2sparse_extra.h"
 #include "osd_0.h"
 #include "osd_w.h"
@@ -60,9 +59,6 @@ bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_orde
     if(osd_method==0) {
         assert(osd_order<=N-rank);
         this->encoding_input_count=pow(2,osd_order);
-
-        cout<<this->encoding_input_count<<endl;
-
         this->osd_w_encoding_inputs = new char*[encoding_input_count];
         for(int i = 0; i < encoding_input_count; ++i)
             osd_w_encoding_inputs[i] = decimal_to_binary_reverse(i, N - rank);
@@ -124,15 +120,32 @@ char *bp_osd::bp_decode(char *synd) {
 
 char *bp_osd::osd_post_process(double *soft_decisions, char *synd){
 
-    if(osd_method==0) osd_e(H,synd,soft_decisions,rank,osd_data);
-    else if(osd_method==1) osd_cs(H,synd,soft_decisions,rank,osd_data);
-    else if(osd_method==2) osd_0(H,synd,osd0_decoding,soft_decisions,rank);
+    if((osd_method==0)||(osd_method==1))
+        osd_w(
+                H,
+                synd,
+                osd0_decoding,
+                osdw_decoding,
+                soft_decisions,
+                osd_order, rank,
+                osd_w_encoding_inputs,
+                encoding_input_count
+        );
+
+    else if(osd_method==2){
+        osd_0(
+                H,
+                synd,
+                osd0_decoding,
+                soft_decisions,
+                rank
+        );
+        osdw_decoding=osd0_decoding;
+    }
     else {
         cout << "ERROR. <Function bp_osd::osd_post_process>. Invalid OSD method!" << endl;
         exit(22);
     }
-    osd0_decoding=osd_data[0].decoding;
-    osdw_decoding=osd_data[1].decoding;
 
     return osdw_decoding;
 
