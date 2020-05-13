@@ -5,7 +5,7 @@
   "input_seed": 666,
   "bit_error_rate": 0.05,
   "target_runs": 1000,
-  "osd_order": 40,
-  "max_iter": 50,
-  "osd_method": "osd_cs_test"
+  "osd_order": 10,
+  "max_iter": 400,
+  "osd_method": "osd_e"
 }

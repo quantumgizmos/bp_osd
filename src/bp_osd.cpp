@@ -23,8 +23,8 @@ extern "C" {
 #include "bp_decoder_ms.h"
 #include "mod2sparse_extra.h"
 #include "osd_0.h"
-#include "osd_e.h"
-#include "osd_cs.h"
+#include "osd_w.h"
+#include "osd_g.h"
 #include "sort.h"
 }
 
@@ -129,7 +129,7 @@ char *bp_osd::bp_decode(char *synd) {
 char *bp_osd::osd_post_process(double *soft_decisions, char *synd){
 
     if((osd_method==0)||(osd_method==1))
-        osd_e(
+        osd_w(
                 H,
                 synd,
                 osd0_decoding,
@@ -152,7 +152,7 @@ char *bp_osd::osd_post_process(double *soft_decisions, char *synd){
     }
 
     else if(osd_method==3){
-        osd_cs(
+        osd_g(
                 H,
                 synd,
                 osd0_decoding,
@@ -186,7 +186,7 @@ char *bp_osd::bp_osd_decode(char *synd) {
     }
 
     if((osd_method==0)||(osd_method==1))
-        osd_e(
+        osd_w(
                 H,
                 synd,
                 osd0_decoding,
@@ -209,7 +209,7 @@ char *bp_osd::bp_osd_decode(char *synd) {
     }
 
     else if(osd_method==3){
-        osd_cs(
+        osd_g(
                 H,
                 synd,
                 osd0_decoding,

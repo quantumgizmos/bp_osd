@@ -1,4 +1,4 @@
-int osd_cs(
+int osd_g(
         mod2sparse *A,
         char *synd,
         char *osd0_decoding,

@@ -21,8 +21,8 @@ set(LIB_FILES ${LIB_FILES} src/sim_util.cpp src/sim_util.h)
 set(LIB_FILES ${LIB_FILES} src/timing.cpp src/timing.h)
 set(LIB_FILES ${LIB_FILES} src/sort.c src/sort.h)
 set(LIB_FILES ${LIB_FILES} src/osd_0.c src/osd_0.h)
-set(LIB_FILES ${LIB_FILES} src/osd_e.c src/osd_e.h)
-set(LIB_FILES ${LIB_FILES} src/osd_cs.c src/osd_cs.h)
+set(LIB_FILES ${LIB_FILES} src/osd_w.c src/osd_w.h)
+set(LIB_FILES ${LIB_FILES} src/osd_g.c src/osd_g.h)
 
 
 add_library(bp_osd ${LIB_FILES})
