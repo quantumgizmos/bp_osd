@@ -14,11 +14,12 @@ cd ..
 
 ## Alist files
 
-This library uses the [alist](http://www.inference.org.uk/mackay/codes/alist.html) sparse format for storing parity check matrices. A python script for converting Numpy matrices to alist files can be found in src_python directory.
+This library uses the [alist](http://www.inference.org.uk/mackay/codes/alist.html) sparse format for storing parity check matrices. A python script for converting Numpy matrices to alist files can be found in "src_python" directory.
+Example alist files for various quantum codes can be found in the "codes" directory.
 
 
 ## Running the BP+OSD Sim
-The C++ source file for the BP+OSD sim script can be found at sim_scripts/bp_osd_decode.cpp.
+The C++ source file for the BP+OSD sim script can be found at "sim_scripts/bp_osd_decode.cpp".
 The example program to decode a [[400,16,6]] random QLDPC code can be run (from the repository root) with the following command
 
 ```
