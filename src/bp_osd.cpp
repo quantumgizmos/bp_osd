@@ -1,9 +1,3 @@
-//
-// Created by joschka on 09/02/2020.
-//
-
-
-
 #include <stdio.h>
 #include <vector>
 #include<iostream>

@@ -73,12 +73,12 @@ void bp_update_ms(mod2sparse *H,
   char *temp_synd;
   char *temp_dec;
 
+  //scaling factor
   iter++;
-
   alpha=1.0 - pow(2.0,  (-1*(double) iter)/1  );
 
 
- /* Recompute likelihood ratios. */
+  //Recompute likelihood ratios.
   for (i = 0; i<M; i++)
   { 
     
@@ -125,14 +125,9 @@ void bp_update_ms(mod2sparse *H,
 
       }
 
-
-
-
-
   }
 
-  /* Recompute log-probability-ratios for the bits */
-
+  //Recompute log-probability-ratios for the bits
   for (j = 0; j<N; j++)
     { 
       pr = log_prob_ratio_initial;
@@ -184,12 +179,14 @@ double *log_prob_ratios)
         bp_update_ms(H,synd, log_prob_ratios, it, decoding);
         syndrome(H,decoding,candidate_synd);
 
+        //check hamming weight between candidate syndrome and target syndrome
         hamming_weight=0;
         for(int check_no=0;check_no<M;check_no++)
           {
             hamming_weight+=synd[check_no]^candidate_synd[check_no];
           }
 
+        //exit if candidate syndrome has converged to the target solution
         if(hamming_weight==0)
           {
             free(candidate_synd);

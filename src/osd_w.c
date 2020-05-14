@@ -15,15 +15,16 @@
 #include "osd_w.h"
 
 int osd_w(
-        mod2sparse *A,
-        char *synd,
-        char *osd0_decoding,
-        char *osdw_decoding,
-        double *log_prob_ratios,
-        int osd_order,
-        int A_rank,
-        char **encoding_operator_inputs,
-        int encoding_input_count){
+        mod2sparse *A, //parity check matrix
+        char *synd, //syndrome
+        char *osd0_decoding, //char string for OSD0 decoding
+        char *osdw_decoding, //char string for higher order decoding
+        double *log_prob_ratios, //the soft-decisions (from BP)
+        int osd_order, //OSD order
+        int A_rank, //rank of parity check matrix
+        char **encoding_operator_inputs, //the list of higher order terms to search over
+        int encoding_input_count //the number of higher order terms to search over
+        ){
 
     int M = mod2sparse_rows(A);
     int N = mod2sparse_cols(A);
@@ -41,7 +42,7 @@ int osd_w(
     char *g=chk_alloc(M,sizeof(*g));
     char *Htx=chk_alloc(M,sizeof(*Htx));
 
-
+    //first we find the OSD-0 solutions
     osd_0_solve(
             A,
             L,

@@ -31,9 +31,9 @@ class timing {
         start = chrono::system_clock::now();
         start_time = chrono::system_clock::to_time_t(start);
         start_time_string=strtok(ctime(&start_time),"\n");
-        cout<<start_time_string<<endl;
+//        cout<<start_time_string<<endl;
         start_time_seconds=int(start_time);
-        cout<<start_time_seconds<<endl;
+//        cout<<start_time_seconds<<endl;
 
     }
 
