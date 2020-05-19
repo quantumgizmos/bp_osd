@@ -27,7 +27,7 @@ extern "C" {
 using namespace std;
 
 
-bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_order,int osd_method){
+bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_order,int osd_method, int bp_method){
 
     this->H=H;
     this->N=mod2sparse_cols(H);
@@ -41,6 +41,8 @@ bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_orde
     if(max_iter==0){this->max_iter=N;}
     else if(max_iter>N){this->max_iter=N;}
     else{this->max_iter=max_iter;}
+
+    this->bp_method=bp_method;
 
     this->osd_order=osd_order;
     this->osd_method=osd_method;
@@ -99,15 +101,12 @@ bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_orde
 
 char *bp_osd::bp_decode(char *synd) {
 
-    bp_decode_ms(
-            H,
-            synd,
-            channel_prob,
-            max_iter,
-            converge,
-            iter,
-            bp_decoding,
-            log_prob_ratios);
+    if(bp_method==0) bp_decode_ms(H,synd,channel_prob,max_iter,converge,iter,bp_decoding,log_prob_ratios);
+    else if(bp_method==1) bp_decode_ms_min_synd(H,synd,channel_prob,max_iter,converge,iter,bp_decoding,log_prob_ratios);
+    else{
+        cout<<"ERROR in <bp_osd::bp_decode>: Invalid BP_method" <<endl;
+        exit(22);
+    }
 
 
 
