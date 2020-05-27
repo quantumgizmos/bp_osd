@@ -26,6 +26,7 @@ extern "C" {
 
 using namespace std;
 
+bp_osd::bp_osd() {};
 
 bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_order,int osd_method, int bp_method){
 
