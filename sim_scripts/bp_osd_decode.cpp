@@ -7,30 +7,11 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <json.hpp>
-#include "timing.h"
-#include "json_util.h"
 
-using json = nlohmann::json;
+#include "bp_osd_c.hpp"
 using namespace std;
 
-//C include
-extern "C" {
-#include "mod2sparse.h"
-#include "mod2dense.h"
-#include "mod2convert.h"
-#include "load_alist.h"
-#include "syndrome.h"
-#include "binary_char.h"
-#include "bp_decoder_ms.h"
-#include "osd.h"
-#include "mtwister.h"
-#include "mod2sparse_extra.h"
-}
 
-#include "bp_osd.h" //C++ wrapper for BP OSD
-#include "setup_mtwister.h"
-#include "sim_util.h"
 
 
 int main(int argc, char *argv[])
@@ -49,8 +30,8 @@ int main(int argc, char *argv[])
 
     //timing functions setup
     timing time;
-    cout<<"Input file: "<<argv[1]<<endl;
     cout<<"Start time: "<<time.start_time_string<<endl;
+    cout<<"Input file: "<<argv[1]<<endl;
     int elapsed_seconds;
     elapsed_seconds=time.elapsed_time_seconds();
 
@@ -90,14 +71,16 @@ int main(int argc, char *argv[])
         osd_method_i=2;
         output["osd_order"]=0;
     }
-    else cout<<"ERROR: Invalid OSD method"<<endl;
-
+    else if(osd_method=="osd_g") osd_method_i=3;
+    else{
+        cout<<"ERROR: Invalid OSD method: "<<osd_method<<endl;
+        exit(22);
+    }
     if(osd_order==0){
-        osd_method="osd_e";
+        osd_method="osd_w";
         output["osd_method"]=osd_method;
         osd_method_i=2;
     }
-
 
     //set up output file
     string p_label =to_string(bit_error_rate);
@@ -106,7 +89,6 @@ int main(int argc, char *argv[])
     stringstream output_filename;
     output_filename<<argv[2]<<"/"<<label<<";p:"<<p_label<<";ui:"<<ui<<".json";
     cout<<"\nOutput filename: "<< output_filename.str() <<endl;
-
 
 
     //LOAD ALIST FILES
@@ -125,7 +107,7 @@ int main(int argc, char *argv[])
     int lx_n=mod2sparse_cols(lx);
     output["lx_n"]=lx_n;
     output["lx_k"]=lx_k;
-
+    assert(lx_n==hx_n);
 
 
     //Setup BP+OSD decoder for hx
@@ -156,6 +138,9 @@ int main(int argc, char *argv[])
 
 
     //MAIN SIM LOOP
+
+    cout<<endl;
+    cout<<"Simulating "<<target_runs<<" error correction cycles..."<<endl;
     for(long long unsigned int run_count=1; run_count <= target_runs; run_count++) {
 
         //generate error
@@ -215,7 +200,7 @@ int main(int argc, char *argv[])
             output["bp_ler"] = bp_ler;
             output["runtime_seconds"] = time.elapsed_time_seconds();
             output["runtime_readable"] = time.elapsed_time_readable();
-            cout << "Runs: " << run_count << "; OSDW_LER: " << osdw_ler << "; BP_LER: " << bp_ler<< "; OSD0_LER: " << osd0_ler<< "; Runtime: " << output["runtime_readable"] << endl;
+            cout << "Runs: " << run_count << "; OSDW_LER: " << osdw_ler << "; OSD0_LER: " << osd0_ler << "; BP_LER: " << bp_ler << "; Runtime: " << output["runtime_readable"] << endl;
 
             //command line output
             ofstream output_file(output_filename.str(),ofstream::trunc);

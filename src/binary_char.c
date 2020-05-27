@@ -96,7 +96,5 @@ int hamming_difference(char *v1,char *v2,int len){
 
     return hamming_weight;
 
-
-
 }
 

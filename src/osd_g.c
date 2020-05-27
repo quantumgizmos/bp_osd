@@ -12,19 +12,16 @@
 #include "syndrome.h"
 #include "sort.h"
 #include "osd_0.h"
-#include "osd_w.h"
+#include "osd_g.h"
 
-int osd_w(
-        mod2sparse *A, //parity check matrix
-        char *synd, //syndrome
-        char *osd0_decoding, //char string for OSD0 decoding
-        char *osdw_decoding, //char string for higher order decoding
-        double *log_prob_ratios, //the soft-decisions (from BP)
-        int osd_order, //OSD order
-        int A_rank, //rank of parity check matrix
-        char **encoding_operator_inputs, //the list of higher order terms to search over
-        int encoding_input_count //the number of higher order terms to search over
-        ){
+int osd_g(
+        mod2sparse *A,
+        char *synd,
+        char *osd0_decoding,
+        char *osdw_decoding,
+        double *log_prob_ratios,
+        int osd_order,
+        int A_rank){
 
     int M = mod2sparse_rows(A);
     int N = mod2sparse_cols(A);
@@ -37,12 +34,18 @@ int osd_w(
     int *cols=chk_alloc(N,sizeof(*cols));
     int *rows=chk_alloc(M,sizeof(*rows));
 
-    char *x;
+    char *x=chk_alloc(N,sizeof(*x));
     char *y=chk_alloc(N,sizeof(*y));
     char *g=chk_alloc(M,sizeof(*g));
     char *Htx=chk_alloc(M,sizeof(*Htx));
 
-    //first we find the OSD-0 solutions
+    int *w1_osd_weights=chk_alloc(k,sizeof(*w1_osd_weights));
+    int *w1_osd_cols=chk_alloc(k,sizeof(*w1_osd_cols));
+
+//    printf("w: %i",osd_order);
+
+//    exit(22);
+
     osd_0_solve(
             A,
             L,
@@ -71,9 +74,9 @@ int osd_w(
 
     /*Search through the encoding strings*/
     int solution_weight;
-    for(long unsigned int j=0; j<encoding_input_count;j++){
+    for(long unsigned int j=0; j<k;j++){
 
-        x=encoding_operator_inputs[j];
+        x[j]=1;
         mod2sparse_mulvec(Ht,x,Htx);
         bin_char_add(synd,Htx,g,M);
         LU_forward_backward_solve(L, U, rows, cols, g, y);
@@ -89,11 +92,55 @@ int osd_w(
             for(int bit_no=0;bit_no<N;bit_no++) osdw_decoding[bit_no]=y[bit_no];
         }
 
+        w1_osd_weights[j]=solution_weight;
+        x[j]=0;
+
     }
 
 
+
+    col_sort_int(w1_osd_weights,w1_osd_cols,k);
+
+    for(long unsigned int i =0; i<osd_order;i++){
+        for(long unsigned int j=0; j<osd_order;j++) {
+
+            if(j<=i) continue;
+
+            x[w1_osd_cols[i]]=1;
+            x[w1_osd_cols[j]]=1;
+
+            mod2sparse_mulvec(Ht,x,Htx);
+            bin_char_add(synd,Htx,g,M);
+            LU_forward_backward_solve(L, U, rows, cols, g, y);
+
+            for(int col_no=0;col_no<k;col_no++){
+                y[Ht_cols[col_no]]=x[col_no];
+            }
+
+
+            solution_weight=bin_char_weight(y,N);
+
+            if(solution_weight<osd_min_weight){
+                osd_min_weight=solution_weight;
+                for(int bit_no=0;bit_no<N;bit_no++) osdw_decoding[bit_no]=y[bit_no];
+            }
+
+            x[w1_osd_cols[i]]=0;
+            x[w1_osd_cols[j]]=0;
+
+        }
+
+    }
+
+
+
+
+
+    free(w1_osd_weights);
+    free(w1_osd_cols);
     free(Htx);
     free(Ht_cols);
+    free(x);
     free(y);
     free(g);
     mod2sparse_free(Ht);

@@ -2,8 +2,8 @@
 // Created by joschka on 16/03/2020.
 //
 
-#ifndef JOSCHKA_SINGLE_SHOT_TEST_TIMING_H
-#define JOSCHKA_SINGLE_SHOT_TEST_TIMING_H
+#ifndef TIMING_H
+#define TIMING_H
 
 #include <iostream>
 #include <stdio.h>
@@ -31,9 +31,9 @@ class timing {
         start = chrono::system_clock::now();
         start_time = chrono::system_clock::to_time_t(start);
         start_time_string=strtok(ctime(&start_time),"\n");
-        cout<<start_time_string<<endl;
+//        cout<<start_time_string<<endl;
         start_time_seconds=int(start_time);
-        cout<<start_time_seconds<<endl;
+//        cout<<start_time_seconds<<endl;
 
     }
 
@@ -69,4 +69,4 @@ class timing {
 };
 
 
-#endif //JOSCHKA_SINGLE_SHOT_TEST_TIMING_H
+#endif //TIMING_H

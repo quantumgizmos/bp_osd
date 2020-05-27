@@ -7,7 +7,6 @@
 
 #include "alloc.h"
 #include "mod2sparse.h"
-#include "osd.h"
 #include "mod2sparse_extra.h"
 #include "binary_char.h"
 #include "syndrome.h"
@@ -45,7 +44,7 @@ int osd_0(
             A_rank,
             0);
 
-
+    //cleanup
     mod2sparse_free(L);
     mod2sparse_free(U);
     free(rows);
@@ -80,6 +79,7 @@ int osd_0(
           orig_cols[i] = cols[i];
       }
 
+      //Performs LU decomposition of the parity check matrix.
       mod2sparse_decomp_osd
               (A,    /* Input matrix, M by N */
                A_rank,        /* Size of sub-matrix to find LU decomposition of */
@@ -114,7 +114,7 @@ int osd_0(
 
       }
 
-      //solve the syndrome equation using forwards/backwards substitution
+      //solve the syndrome equation using forwards/backwards substitution. This function also reverts the bit string to its original ordering.
       LU_forward_backward_solve(
               L,
               U,

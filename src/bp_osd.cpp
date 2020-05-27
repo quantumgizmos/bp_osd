@@ -1,9 +1,3 @@
-//
-// Created by joschka on 09/02/2020.
-//
-
-
-
 #include <stdio.h>
 #include <vector>
 #include<iostream>
@@ -21,10 +15,10 @@ extern "C" {
 #include "syndrome.h"
 #include "binary_char.h"
 #include "bp_decoder_ms.h"
-#include "osd.h"
 #include "mod2sparse_extra.h"
 #include "osd_0.h"
 #include "osd_w.h"
+#include "osd_g.h"
 #include "sort.h"
 }
 
@@ -34,7 +28,7 @@ using namespace std;
 
 bp_osd::bp_osd() {};
 
-bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_order,int osd_method){
+bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_order,int osd_method, int bp_method){
 
     this->H=H;
     this->N=mod2sparse_cols(H);
@@ -49,6 +43,8 @@ bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_orde
     else if(max_iter>N){this->max_iter=N;}
     else{this->max_iter=max_iter;}
 
+    this->bp_method=bp_method;
+
     this->osd_order=osd_order;
     this->osd_method=osd_method;
     this->bp_decoding=new char[N]();
@@ -61,9 +57,6 @@ bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_orde
     if(osd_method==0) {
         assert(osd_order<=N-rank);
         this->encoding_input_count=pow(2,osd_order);
-
-        // cout<<this->encoding_input_count<<endl;
-
         this->osd_w_encoding_inputs = new char*[encoding_input_count];
         for(int i = 0; i < encoding_input_count; ++i)
             osd_w_encoding_inputs[i] = decimal_to_binary_reverse(i, N - rank);
@@ -94,23 +87,27 @@ bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_orde
 
     }
     else if(osd_method==2) 1;
+    else if(osd_method==3){
+        assert(osd_order<=K);
+        int w2_count=ncr(osd_order,2);
+        this->encoding_input_count = K+w2_count;
+    }
+
     else{
-        cout<<"ERROR. Function <bp_osd::constructor>. OSD Method not valid"<<endl;
+        cout<<"ERROR. Function <bp_osd::constructor>. OSD Method "<<osd_method<< " not valid"<<endl;
+        exit(22);
     }
 
 };
 
 char *bp_osd::bp_decode(char *synd) {
 
-    bp_decode_ms(
-            H,
-            synd,
-            channel_prob,
-            max_iter,
-            converge,
-            iter,
-            bp_decoding,
-            log_prob_ratios);
+    if(bp_method==0) bp_decode_ms(H,synd,channel_prob,max_iter,converge,iter,bp_decoding,log_prob_ratios);
+    else if(bp_method==1) bp_decode_ms_min_synd(H,synd,channel_prob,max_iter,converge,iter,bp_decoding,log_prob_ratios);
+    else{
+        cout<<"ERROR in <bp_osd::bp_decode>: Invalid BP_method" <<endl;
+        exit(22);
+    }
 
 
 
@@ -125,15 +122,45 @@ char *bp_osd::bp_decode(char *synd) {
 
 char *bp_osd::osd_post_process(double *soft_decisions, char *synd){
 
-    if(osd_method==0) osd_e(H,synd,soft_decisions,rank,osd_data);
-    else if(osd_method==1) osd_cs(H,synd,soft_decisions,rank,osd_data);
-    else if(osd_method==2) osd_0(H,synd,osd0_decoding,soft_decisions,rank);
+    if((osd_method==0)||(osd_method==1))
+        osd_w(
+                H,
+                synd,
+                osd0_decoding,
+                osdw_decoding,
+                soft_decisions,
+                osd_order, rank,
+                osd_w_encoding_inputs,
+                encoding_input_count
+        );
+
+    else if(osd_method==2){
+        osd_0(
+                H,
+                synd,
+                osd0_decoding,
+                soft_decisions,
+                rank
+        );
+        osdw_decoding=osd0_decoding;
+    }
+
+    else if(osd_method==3){
+        osd_g(
+                H,
+                synd,
+                osd0_decoding,
+                osdw_decoding,
+                soft_decisions,
+                osd_order,
+                rank
+        );
+    }
+
     else {
-        cout << "ERROR. <Function bp_osd::osd_post_process>. Invalid OSD method!" << endl;
+        cout << "ERROR. <Function bp_osd::osd_post_process>. Invalid OSD method! Method: "<<osd_method << endl;
         exit(22);
     }
-    osd0_decoding=osd_data[0].decoding;
-    osdw_decoding=osd_data[1].decoding;
 
     return osdw_decoding;
 
@@ -162,7 +189,7 @@ char *bp_osd::bp_osd_decode(char *synd) {
                 osd_order, rank,
                 osd_w_encoding_inputs,
                 encoding_input_count
-                );
+        );
 
     else if(osd_method==2){
         osd_0(
@@ -174,8 +201,21 @@ char *bp_osd::bp_osd_decode(char *synd) {
                 );
         osdw_decoding=osd0_decoding;
     }
+
+    else if(osd_method==3){
+        osd_g(
+                H,
+                synd,
+                osd0_decoding,
+                osdw_decoding,
+                log_prob_ratios,
+                osd_order,
+                rank
+        );
+    }
+
     else {
-        cout << "ERROR. <Function bp_osd::bp_osd_decode>. Invalid OSD method!" << endl;
+        cout << "ERROR. <Function bp_osd::bp_osd_decode>. Invalid OSD method! Method: "<<osd_method << endl;
         exit(22);
     }
 
