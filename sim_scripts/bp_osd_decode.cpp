@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
         exit(22);
     }
     if(osd_order==0){
-        osd_method="osd_w";
+        osd_method="osd_0";
         output["osd_method"]=osd_method;
         osd_method_i=2;
     }
