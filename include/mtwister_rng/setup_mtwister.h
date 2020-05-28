@@ -21,14 +21,6 @@ extern "C" {
 
 using namespace std;
 
-MTRand setup_mtwister_rng(unsigned long long int random_seed){
-    MTRand r;
-    r=seedRand(random_seed);
-    cout<<"Mtwister seed: "<<random_seed<<endl;
-    return r;
-}
-
-
-
+MTRand setup_mtwister_rng(unsigned long long int random_seed);
 
 #endif //JOSCHKA_TEST3_SETUP_MTWISTER_H
