@@ -1,6 +1,5 @@
 void mod2sparse_print_terminal (mod2sparse *A);
 int mod2sparse_rank(mod2sparse *A);
-int mod2sparse_rank2(mod2sparse *A);
 
 
 void LU_forward_backward_solve
