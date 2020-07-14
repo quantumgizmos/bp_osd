@@ -27,6 +27,13 @@ int main(int argc, char *argv[])
         exit(22);
     };
 
+    if(argv[3]==nullptr){
+        cout<<"ERROR: Please select a method for verifying the recovered error"<<endl;
+        exit(22);
+    } else if ( strcmp(argv[3],"-lx") != 0 && strcmp(argv[3],"-hz") != 0  ) {
+        cout<<"ERROR: Please select a valid method for verifying the recovered error"<<endl;
+        exit(22);
+    };
 
     //timing functions setup
     timing time;
@@ -165,16 +172,32 @@ int main(int argc, char *argv[])
 
 
             //check for logical errors
-            logical_error = check_logical_error(lx, bit_error, osdw_decoding);
-            if (!logical_error) osdw_success_count++;
+            if (strcmp(argv[3],"-lx") == 0) {
+                logical_error = check_logical_error_lx(lx, bit_error, osdw_decoding);
+            } else {
+                logical_error = check_logical_error_hz(lx, bit_error, osdw_decoding);
+            }
 
+            if (!logical_error) osdw_success_count++;
+            
 //            osdw_decoding = hx_bp_osd.osd0_decoding;
-            logical_error = check_logical_error(lx, bit_error, hx_bp_osd.osd0_decoding);
+            if (strcmp(argv[3],"-lx") == 0) {
+                logical_error = check_logical_error_lx(lx, bit_error, hx_bp_osd.osd0_decoding);
+            } else {
+                logical_error = check_logical_error_hz(lx, bit_error, hx_bp_osd.osd0_decoding);
+            }
+            
             if (!logical_error) osd0_success_count++;
 
             if (*hx_bp_osd.converge == 1) {
                 bp_converge_count++;
-                logical_error = check_logical_error(lx, bit_error, hx_bp_osd.bp_decoding);
+
+                if (strcmp(argv[3],"-lx") == 0) {
+                    logical_error = check_logical_error_lx(lx, bit_error, hx_bp_osd.bp_decoding);
+                } else {
+                    logical_error = check_logical_error_hz(lx, bit_error, hx_bp_osd.bp_decoding);
+                }
+
                 if (!logical_error) bp_success_count++;
             }
         }

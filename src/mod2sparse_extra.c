@@ -405,3 +405,22 @@ int mod2sparse_decomp_osd
 
     return nnf;
 }
+
+
+void mod2sparse_merge_vec(mod2sparse* m1, char *vec, int n, mod2sparse* m2) {
+
+    if (mod2sparse_cols(m2) < mod2sparse_cols(m1) + 1 || mod2sparse_rows(m2) < mod2sparse_rows(m1)  || mod2sparse_rows(m2) < n) {
+        printf("mod2sparse_merge_vec: the receiving matrix doesn't have the good dimensions");
+    }
+
+    mod2sparse_copy(m1,m2);
+
+    int ncols = mod2sparse_cols(m1);
+ 
+    for (int i = 0; i < n; i++){
+        if (vec[i] != 0){ 
+            mod2sparse_insert(m2,i,ncols);
+        }
+    }
+
+}
