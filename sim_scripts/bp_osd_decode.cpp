@@ -27,13 +27,13 @@ int main(int argc, char *argv[])
         exit(22);
     };
 
-    if(argv[3]==nullptr){
-        cout<<"ERROR: Please select a method for verifying the recovered error"<<endl;
-        exit(22);
-    } else if ( strcmp(argv[3],"-lx") != 0 && strcmp(argv[3],"-hz") != 0  ) {
-        cout<<"ERROR: Please select a valid method for verifying the recovered error"<<endl;
-        exit(22);
-    };
+//    if(argv[3]==nullptr){
+//        cout<<"ERROR: Please select a method for verifying the recovered error"<<endl;
+//        exit(22);
+//    } else if ( strcmp(argv[3],"-lx") != 0 && strcmp(argv[3],"-hz") != 0  ) {
+//        cout<<"ERROR: Please select a valid method for verifying the recovered error"<<endl;
+//        exit(22);
+//    };
 
     //timing functions setup
     timing time;
@@ -68,6 +68,14 @@ int main(int argc, char *argv[])
     int osd_order = json_read_safe(json_input,"osd_order");
     int max_iter=json_read_safe(json_input,"max_iter");
     long long unsigned int target_runs=json_read_safe(json_input,"target_runs");
+
+    //read in Logical check method
+    string logical_check_method = json_read_safe(json_input,"logical_check_method");
+    if((logical_check_method=="lx")||(logical_check_method=="hz")) 1;
+    else{
+        cout<<"ERROR: Please select a valid method for verifying the recovered error. `lx' or `hz'."<<endl;
+        exit(22);
+    }
 
     //read in OSD method and check that it is valid
     string osd_method = json_read_safe(json_input,"osd_method");
@@ -109,12 +117,25 @@ int main(int argc, char *argv[])
     output["hx_m"]=hx_m;
 
     //load logical check matrix, lx
-    mod2sparse *lx=load_alist_cpp(json_read_safe(json_input,"lx_filename"));
-    int lx_k=mod2sparse_rows(lx);
-    int lx_n=mod2sparse_cols(lx);
-    output["lx_n"]=lx_n;
-    output["lx_k"]=lx_k;
-    assert(lx_n==hx_n);
+    mod2sparse *lx;
+    if(logical_check_method=="lx") {
+        lx = load_alist_cpp(json_read_safe(json_input, "lx_filename"));
+        int lx_k = mod2sparse_rows(lx);
+        int lx_n = mod2sparse_cols(lx);
+        output["lx_n"] = lx_n;
+        output["lx_k"] = lx_k;
+        assert(lx_n == hx_n);
+    }
+
+    mod2sparse *hz;
+    if(logical_check_method=="hz") {
+        hz=load_alist_cpp(json_read_safe(json_input,"hz_filename"));
+        int hz_m=mod2sparse_rows(hz);
+        int hz_n=mod2sparse_cols(hz);
+        output["hz_n"]=hz_n;
+        output["hz_m"]=hz_m;
+        assert(hz_n==hx_n);
+    }
 
 
     //Setup BP+OSD decoder for hx
@@ -172,19 +193,19 @@ int main(int argc, char *argv[])
 
 
             //check for logical errors
-            if (strcmp(argv[3],"-lx") == 0) {
+            if (logical_check_method=="lx") {
                 logical_error = check_logical_error_lx(lx, bit_error, osdw_decoding);
             } else {
-                logical_error = check_logical_error_hz(lx, bit_error, osdw_decoding);
+                logical_error = check_logical_error_hz(hz, bit_error, osdw_decoding);
             }
 
             if (!logical_error) osdw_success_count++;
             
 //            osdw_decoding = hx_bp_osd.osd0_decoding;
-            if (strcmp(argv[3],"-lx") == 0) {
+            if (logical_check_method=="lx") {
                 logical_error = check_logical_error_lx(lx, bit_error, hx_bp_osd.osd0_decoding);
             } else {
-                logical_error = check_logical_error_hz(lx, bit_error, hx_bp_osd.osd0_decoding);
+                logical_error = check_logical_error_hz(hz, bit_error, hx_bp_osd.osd0_decoding);
             }
             
             if (!logical_error) osd0_success_count++;
@@ -192,10 +213,10 @@ int main(int argc, char *argv[])
             if (*hx_bp_osd.converge == 1) {
                 bp_converge_count++;
 
-                if (strcmp(argv[3],"-lx") == 0) {
+                if (logical_check_method=="lx") {
                     logical_error = check_logical_error_lx(lx, bit_error, hx_bp_osd.bp_decoding);
                 } else {
-                    logical_error = check_logical_error_hz(lx, bit_error, hx_bp_osd.bp_decoding);
+                    logical_error = check_logical_error_hz(hz, bit_error, hx_bp_osd.bp_decoding);
                 }
 
                 if (!logical_error) bp_success_count++;
