@@ -67,8 +67,8 @@ int mod2sparse_rank(mod2sparse *A){
 
     free(rows);
     free(cols);
-    free(L);
-    free(U);
+    mod2sparse_free(L);
+    mod2sparse_free(U);
 
     rank=M-nnf;
 
