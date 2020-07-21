@@ -17,6 +17,7 @@ extern "C" {
 #include "bp_decoder_ms.h"
 #include "mtwister.h"
 #include "mod2sparse_extra.h"
+#include "logical_check.h"
 }
 
 #include "bp_osd.h"

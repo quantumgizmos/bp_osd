@@ -25,6 +25,7 @@ set(LIB_FILES ${LIB_FILES} src/sort.c src/sort.h)
 set(LIB_FILES ${LIB_FILES} src/osd_0.c src/osd_0.h)
 set(LIB_FILES ${LIB_FILES} src/osd_w.c src/osd_w.h)
 set(LIB_FILES ${LIB_FILES} src/osd_g.c src/osd_g.h)
+set(LIB_FILES ${LIB_FILES} src/logical_check.c src/logical_check.h)
 
 
 add_library(bp_osd ${LIB_FILES})
