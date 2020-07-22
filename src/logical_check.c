@@ -11,7 +11,9 @@
 #include "mod2sparse_extra.h"
 #include "binary_char.h"
 
-
+int check_logical_error(mod2sparse* l,char *orig_error,char *decoding){
+    return check_logical_error_lx(l,orig_error,decoding);
+}
 
 int check_logical_error_lx(mod2sparse* l,char *orig_error,char *decoding){
 
