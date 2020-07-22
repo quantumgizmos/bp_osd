@@ -17,6 +17,6 @@ using namespace std;
 #include <json.hpp>
 using json = nlohmann::json;
 
-json json_read_safe(json j, string key);
+json json_read_safe(json j, string key,string default_to="0");
 
 #endif //JOSCHKA_TEST_PERIODIC_JSON_UTIL_H

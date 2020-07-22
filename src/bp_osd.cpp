@@ -15,6 +15,7 @@ extern "C" {
 #include "syndrome.h"
 #include "binary_char.h"
 #include "bp_decoder_ms.h"
+#include "bp_decoder_ps.h"
 #include "mod2sparse_extra.h"
 #include "osd_0.h"
 #include "osd_w.h"
@@ -104,6 +105,8 @@ char *bp_osd::bp_decode(char *synd) {
 
     if(bp_method==0) bp_decode_ms(H,synd,channel_prob,max_iter,converge,iter,bp_decoding,log_prob_ratios);
     else if(bp_method==1) bp_decode_ms_min_synd(H,synd,channel_prob,max_iter,converge,iter,bp_decoding,log_prob_ratios);
+    else if(bp_method==2) bp_decode_ps(H,synd,channel_prob,max_iter,converge,iter,bp_decoding,log_prob_ratios);
+    else if(bp_method==3) bp_decode_ps_min_synd(H,synd,channel_prob,max_iter,converge,iter,bp_decoding,log_prob_ratios);
     else{
         cout<<"ERROR in <bp_osd::bp_decode>: Invalid BP_method" <<endl;
         exit(22);

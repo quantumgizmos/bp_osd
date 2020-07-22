@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     long long unsigned int target_runs=json_read_safe(json_input,"target_runs");
 
     //read in Logical check method
-    string logical_check_method = json_read_safe(json_input,"logical_check_method");
+    string logical_check_method = json_read_safe(json_input,"logical_check_method","lx");
     if((logical_check_method=="lx")||(logical_check_method=="hz")) 1;
     else{
         cout<<"ERROR: Please select a valid method for verifying the recovered error. `lx' or `hz'."<<endl;
@@ -96,6 +96,21 @@ int main(int argc, char *argv[])
         output["osd_method"]=osd_method;
         osd_method_i=2;
     }
+
+    //read in BP method and check that it is valid
+    string bp_method = json_read_safe(json_input,"bp_method","min_sum");
+    int bp_method_i=-1;
+    if(bp_method=="min_sum") bp_method_i=0;
+    else if(bp_method=="min_sum_min_synd") bp_method_i=1;
+    else if(bp_method=="product_sum") bp_method_i=2;
+    else if(bp_method=="product_sum_min_synd") bp_method_i=3;
+    else{
+        cout<<"ERROR: Invalid BP method: "<<bp_method<<endl;
+        exit(22);
+    }
+    output["bp_method"]=bp_method;
+
+    
 
     //set up output file
     string p_label =to_string(bit_error_rate);
@@ -139,7 +154,7 @@ int main(int argc, char *argv[])
 
 
     //Setup BP+OSD decoder for hx
-    bp_osd hx_bp_osd(hx,bit_error_rate,max_iter,osd_order,osd_method_i);
+    bp_osd hx_bp_osd(hx,bit_error_rate,max_iter,osd_order,osd_method_i,bp_method_i);
     output["max_iter"]=hx_bp_osd.max_iter;
     output["osdw_encoding_operator_count"]=hx_bp_osd.encoding_input_count;
 

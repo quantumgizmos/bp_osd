@@ -4,9 +4,10 @@
   "lx_filename": "codes/random/mkmn/hgp_mkmn_16_4_6_lx.alist",
   "code_label": "hgp_mkmn_16_4_6",
   "logical_check_method": "lx",
-  "input_seed": 666,
+  "input_seed": 149,
+  "bp_method": "product_sum",
   "bit_error_rate": 0.05,
-  "target_runs": 10000,
+  "target_runs": 1000,
   "osd_order": 40,
   "max_iter": 50,
   "osd_method": "combination_sweep"

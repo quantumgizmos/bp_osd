@@ -13,7 +13,7 @@ add_subdirectory(include/radford_neal) #Software for LDPC codes by Radford Neal
 
 set(LIB_FILES ${LIB_FILES} src/bp_osd_c.hpp)
 set(LIB_FILES ${LIB_FILES} src/bp_decoder_ms.h src/bp_decoder_ms.c)
-
+set(LIB_FILES ${LIB_FILES} src/bp_decoder_ps.h src/bp_decoder_ps.c)
 set(LIB_FILES ${LIB_FILES} src/syndrome.h src/syndrome.c)
 set(LIB_FILES ${LIB_FILES} src/binary_char.h src/binary_char.c)
 set(LIB_FILES ${LIB_FILES} src/mod2sparse_extra.h src/mod2sparse_extra.c)

@@ -15,6 +15,7 @@ extern "C" {
 #include "syndrome.h"
 #include "binary_char.h"
 #include "bp_decoder_ms.h"
+#include "bp_decoder_ps.h"
 #include "mtwister.h"
 #include "mod2sparse_extra.h"
 #include "logical_check.h"
