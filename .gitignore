@@ -1,4 +1,6 @@
 #directories
+ldpc
+.vscode
 build
 .idea
 cmake-build-debug
