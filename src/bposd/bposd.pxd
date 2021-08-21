@@ -39,3 +39,47 @@ cdef extern from "mod2sparse_extra.h":
         mod2sparse *U,
         int *rows,
         int *cols)
+
+cdef class bposd:
+    cdef int MEM_ALLOCATED
+    cdef mod2sparse* H
+    cdef int m, n
+    cdef char* error
+    cdef char* synd
+    cdef char* bp_decoding_synd
+    cdef char* bp_decoding
+    cdef char* decoding
+    cdef char* osd0_decoding
+    cdef char* osdw_decoding
+    cdef int iter
+    cdef int converge
+    cdef double* channel_probs
+    cdef double* log_prob_ratios
+    cdef char** osdw_encoding_inputs
+    cdef double error_rate
+    cdef int max_iter
+    cdef int bp_method
+    cdef long int encoding_input_count
+    cdef int osd_order
+    cdef int osd_method
+    cdef double ms_scaling_factor
+    cdef int rank
+    cdef int k
+    cdef int i, j
+
+    cdef bp_decoder bpd
+
+    cdef int* rows
+    cdef int* cols
+    cdef int* orig_cols
+    cdef int* Ht_cols
+    cdef char* y
+    cdef char* g
+    cdef char* Htx
+
+    cdef void osd_e_setup(self)
+    cdef void osd_cs_setup(self)
+    cdef int osd(self)
+    cpdef np.ndarray[np.int_t, ndim=1] decode(self, np.ndarray[np.int_t, ndim=1] syndrome)
+    cdef char* decode_cy(self, char* syndrome)
+

@@ -1,2 +1,3 @@
 include src/bposd/*pxd
 global-include *pxd
+global-include *h

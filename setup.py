@@ -9,17 +9,11 @@ from shutil import rmtree
 
 ldpc_path=ldpc.get_include()+'/include'
 
-try:
-    os.mkdir("ldpc")
-except FileExistsError:
-    rmtree("ldpc")
-    os.mkdir("ldpc")
-copy_tree(ldpc.get_include(),"ldpc")
-
 source_files=["src/bposd/bposd.pyx",
             "src/bposd/include/binary_char.c",
             "src/bposd/include/mod2sparse_extra.c",
-            "src/bposd/include/sort.c"]
+            "src/bposd/include/sort.c",
+            ldpc_path+"/mod2sparse.c"]
 
 extension = Extension(
     name="bposd.bposd",
