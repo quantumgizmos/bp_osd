@@ -5,7 +5,36 @@ from scipy.special import comb as nCr
 
 cdef class bposd_decoder:
 
-    def __cinit__(self,mat, error_rate=None, max_iter=0, bp_method=0, osd_order=-1, osd_method=1,ms_scaling_factor=0.625,channel_probs=[None]):
+    '''
+    A class implementing a belief propagation + ordered statistics
+    decoding for LDPC codes
+
+    Parameters
+    ----------
+    mat: numpy.ndarray
+        The parity check matrix of the binary code in numpy.ndarray format.
+    error_rate: float64, optional
+        The bit error rate.
+    max_iter: int, optional
+        The maximum number of iterations for the BP decoder. If max_iter==0, the BP algorithm
+        will iterate n times, where n is the block length of the code.
+    bp_method: str OR int, optional
+        The BP method. Currently three methods are implemented: 1) "ps": product sum updates;
+        2) "ms": min-sum updates; 3) "msl": min-sum log updates
+    ms_scaling_factor: float64, optional
+        Sets the min-sum scaling factor for the min-sum BP method
+    channel_probs: list, optional
+        This parameter can be used to set the initial error channel across all bits.
+    osd_order: str or int, optional
+        Sets the OSD order.
+    osd_method: str or int, optional
+        The OSD method. Currently three methods are availbe: 1) "osd_0": Zero-oder OSD; 2) "osd_e": exhaustive OSD;
+        3) "osd_cs": combination-sweep OSD.
+
+    '''
+
+
+    def __cinit__(self,mat, error_rate=None, max_iter=0, bp_method=0,ms_scaling_factor=0.625,channel_probs=[None],osd_order=-1, osd_method=1):
 
         self.MEM_ALLOCATED=False
 
@@ -37,6 +66,19 @@ cdef class bposd_decoder:
         self.osdw_decoding=<char*>calloc(self.n,sizeof(char)) #the osd_w decoding
 
         #osd setup
+
+        # OSD method
+        if str(osd_method).lower() in ['OSD_0','osd_0','0','osd0']:
+            osd_method=0
+            osd_order=0
+        elif str(osd_method).lower() in ['osd_e','1','osde','exhaustive','e']:
+            osd_method=1
+            if osd_order>15:
+                print("WARNING: Running the 'OSD_E' (Exhaustive method) with search depth greater than 15 is not recommended. Use the 'osd_cs' method instead.")
+        elif str(osd_method).lower() in ['osd_cs','2','osdcs','combination_sweep','combination_sweep','cs']:
+            osd_method=2
+        else:
+            raise Exception(f"ERROR: OSD method '{osd_method}' invalid. Please choose from the following methods: 'OSD_0', 'OSD_E' or 'OSD_CS'.")
 
         self.osd_order=int(osd_order)
         self.osd_method=int(osd_method)
@@ -126,6 +168,20 @@ cdef class bposd_decoder:
             return self.osdw_decoding
 
     cpdef np.ndarray[np.int_t, ndim=1] decode(self, np.ndarray[np.int_t, ndim=1] syndrome):
+        """
+        Runs the BP+OSD decoder for a given syndrome.
+
+        Parameters
+        ----------
+        syndrome: numpy.ndarray
+            The syndrome to be decoded.
+
+        Returns
+        -------
+        numpy.ndarray
+            The BP+OSD decoding in numpy.ndarray format.
+
+        """
         self.synd=numpy2char(syndrome,self.synd)
         self.decode_cy(self.synd)
         if self.osd_order==-1: return char2numpy(self.bp_decoding,self.n)
@@ -254,64 +310,148 @@ cdef class bposd_decoder:
         return 1
 
     def update_channel_probs(self,channel):
+        """
+        Function updates the channel probabilities for each bit in the BP decoder.
+
+        Parameters
+        ----------
+        channel: numpy.ndarray
+            A list of the channel probabilities for each bit
+
+        Returns
+        -------
+        NoneType
+        """
         cdef j
-        for j in range(self.n): self.channel_probs[j]=channel[j]
-
-
-    @property
-    def channel_probs(self):
-        probs=np.zeros(self.n).astype("float")
-        for j in range(self.n):
-            probs[j]=self.channel_probs[j]
-
-        return probs
-
-    @property
-    def bp_probs(self):
-        probs=np.zeros(self.n).astype("float")
-        for j in range(self.n):
-            probs[j]=self.log_prob_ratios[j]
-
-        return probs
-
+        for j in range(self.n): self.channel_probs[j]=channel[j]  
 
     @property
     def bp_method(self):
-        if self.bp_method==0: return "mininum_sum"
-        elif self.bp_method==1: return "product_sum"
+        """
+        Getter for the BP method
+        
+        Returns
+        -------
+        str
+        """
+        if self.bp_method==0: return "product_sum"
+        elif self.bp_method==1: return "mininum_sum"
+        elif self.bp_method==2: return "product_sum_log"
+        elif self.bp_method==3: return "mininum_sum_log"
+
+    @property
+    def iter(self):
+        """
+        Getter. Returns the number of iterations in the last round of BP decoding.
+        
+        Returns
+        -------
+        numpy.ndarray
+        """
+        return self.bpd.iter
+
+    @property
+    def ms_scaling_factor(self):
+        """
+        Getter. Returns the min-sum scaling factor.
+
+        Returns
+        -------
+        float64
+        """
+        return self.ms_scaling_factor
+
+    @property
+    def max_iter(self):
+        """
+        Getter. Returns the maximum interation depth for the BP decoder.
+        
+        Returns
+        -------
+        int
+        """
+        return self.max_iter
+
+    @property
+    def converge(self):
+        """
+        Getter. Returns `1' if the last round of BP succeeded (converged) and `0' if it failed.
+        
+        Returns
+        -------
+        int
+        """
+        return self.bpd.converge
+
+    @property
+    def bp_decoding(self):
+        """
+        Getter. Returns the recovery vector from the last round of BP decoding.
+        
+        Returns
+        -------
+        numpy.ndarray
+        """
+        return char2numpy(self.bp_decoding,self.n)
+
+    @property
+    def log_prob_ratios(self):
+        """
+        Getter. Returns the soft-decision log probability ratios from the last round of BP
+        decoding.
+        
+        Returns
+        -------
+        numpy.ndarray
+        """
+        return double2numpy(self.log_prob_ratios,self.n)
 
     @property
     def osd_method(self):
+        """
+        Getter. Returns the OSD method.
+        
+        Returns
+        -------
+        str
+        """
         if self.osd_order==-1: return None
         if self.osd_method==0: return "osd_0"
         if self.osd_method==1: return "osd_e"
         if self.osd_method==2: return "osd_cs"
-
-
+    
+    @property
+    def osd_order(self):
+        """
+        Getter. Returns the OSD order.
+        
+        Returns
+        -------
+        int
+        """
+        return self.osd_order
 
     @property
-    def iter(self): return self.bpd.iter
+    def osdw_decoding(self):
+        """
+        Getter. Returns the recovery vector from the last round of BP+OSDW decoding.
+        
+        Returns
+        -------
+        numpy.ndarray
+        """        
+        return char2numpy(self.osdw_decoding,self.n)
 
     @property
-    def ms_scaling_factor(self): return self.ms_scaling_factor
-
-    @property
-    def max_iter(self): return self.max_iter
-
-    @property
-    def converge(self): return self.bpd.converge
-
-    @property
-    def osd_order(self): return self.osd_order
-
-    @property
-    def osdw_decoding(self): return char2numpy(self.osdw_decoding,self.n)
-
-    @property
-    def bp_decoding(self): return char2numpy(self.bp_decoding,self.n)
-
-    @property
-    def osd0_decoding(self): return char2numpy(self.osd0_decoding,self.n)
+    def osd0_decoding(self):
+        """
+        Getter. Returns the recovery vector from the last round of BP+OSD0 decoding.
+        
+        Returns
+        -------
+        numpy.ndarray
+        """        
+        return char2numpy(self.osd0_decoding,self.n)
 
 
     def __dealloc__(self):
@@ -336,14 +476,3 @@ cdef class bposd_decoder:
                 for i in range(self.encoding_input_count):
                     free(self.osdw_encoding_inputs[i])
 
-
-# def test():
-
-#     H=np.array([[1,1,0],[0,1,1]])
-
-
-#     cdef mod2sparse *A
-
-#     cdef bposd bpd
-#     bpd=bposd(H,0.01)
-#     print(bpd.max_iter)
