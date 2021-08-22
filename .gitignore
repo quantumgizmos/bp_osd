@@ -1,7 +1,12 @@
 #directories
+.vscode
 build
 .idea
 cmake-build-debug
+dist
+
+#json files
+*json
 
 #swp files
 *swp
