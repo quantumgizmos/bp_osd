@@ -17,7 +17,7 @@ Installation from sources requires Python>=3.6 and a local C compiler (eg. 'gcc'
 ```
 git clone https://github.com/quantumgizmos/bp_osd.git
 cd bp_osd
-pip install -e bposd
+pip install -e .
 ```
 
 ## Demo Scripts
