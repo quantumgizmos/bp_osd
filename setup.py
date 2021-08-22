@@ -27,7 +27,7 @@ extension = Extension(
 setup(
     python_requires='>=3.6',
     name='bposd',
-    version='0.0.1',
+    version='0.0.2',
     description='BP+OSD',
     long_description='This module provides an implementation of the belief\
         propagagation + ordered statistics decoder for quantum LDPC codes.',
