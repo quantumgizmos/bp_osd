@@ -6,8 +6,8 @@ import ldpc
 from shutil import copyfile
 
 ldpc_path=ldpc.get_include()+'/include'
-
 copyfile(ldpc_path+"/mod2sparse.c","src/bposd/include/mod2sparse.c")
+copyfile(ldpc_path+"/mod2sparse.h","src/bposd/include/mod2sparse.h")
 
 source_files=["src/bposd/bposd.pyx",
             "src/bposd/include/binary_char.c",
@@ -20,7 +20,7 @@ extension = Extension(
     sources=source_files,
     libraries=[],
     library_dirs=[],
-    include_dirs=[ldpc.get_include(), ldpc_path, numpy.get_include(),"src/bposd/include"],
+    include_dirs=[ldpc.get_include(), numpy.get_include(),"src/bposd/include"],
     extra_compile_args=['-std=c11']
     )
 
