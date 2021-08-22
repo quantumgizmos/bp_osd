@@ -4,6 +4,8 @@ build
 .idea
 cmake-build-debug
 
+#json files
+*json
 
 #swp files
 *swp
