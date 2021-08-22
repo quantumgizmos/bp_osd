@@ -40,7 +40,7 @@ cdef extern from "mod2sparse_extra.h":
         int *rows,
         int *cols)
 
-cdef class bposd:
+cdef class bposd_decoder:
     cdef int MEM_ALLOCATED
     cdef mod2sparse* H
     cdef int m, n

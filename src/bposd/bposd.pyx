@@ -3,7 +3,7 @@
 import numpy as np
 from scipy.special import comb as nCr
 
-cdef class bposd:
+cdef class bposd_decoder:
 
     def __cinit__(self,mat, error_rate=None, max_iter=0, bp_method=0, osd_order=-1, osd_method=1,ms_scaling_factor=0.625,channel_probs=[None]):
 
@@ -15,7 +15,10 @@ cdef class bposd:
         self.n=mat.shape[1]
 
         #setup BP decoder
-        self.bpd=bp_decoder(mat,error_rate=error_rate,max_iter=max_iter,ms_scaling_factor=ms_scaling_factor,channel_probs=channel_probs)
+        self.bpd=bp_decoder(mat,error_rate=error_rate,\
+        max_iter=max_iter,\
+        ms_scaling_factor=ms_scaling_factor,\
+        channel_probs=channel_probs, bp_method=bp_method)
         self.H=self.bpd.H
         self.max_iter=self.bpd.max_iter
         self.bp_method=self.bpd.bp_method
@@ -35,8 +38,8 @@ cdef class bposd:
 
         #osd setup
 
-        self.osd_order=osd_order
-        self.osd_method=osd_method
+        self.osd_order=int(osd_order)
+        self.osd_method=int(osd_method)
 
         self.encoding_input_count=0
         
@@ -103,6 +106,9 @@ cdef class bposd:
         self.bpd.synd=syndrome
         self.bpd.bp_decode_cy()
 
+        # print(double2numpy(self.bpd.log_prob_ratios,self.n))
+
+
         if self.osd_order==-1: return self.bp_decoding
 
         #if BP has converged, return the BP solution
@@ -152,6 +158,7 @@ cdef class bposd:
             self.rows,
             self.cols)
 
+
         #solve the syndrome equation with most probable full-rank submatrix
         LU_forward_backward_solve(
             L,
@@ -161,10 +168,12 @@ cdef class bposd:
             self.synd,
             self.osd0_decoding)
 
+
         if self.osd_order==0:
             mod2sparse_free(U)
             mod2sparse_free(L)
             return 1
+
 
         #return the columns outside of the information set to their orginal ordering (the LU decomp scrambles them)
         cdef int check, counter, in_pivot
@@ -249,60 +258,60 @@ cdef class bposd:
         for j in range(self.n): self.channel_probs[j]=channel[j]
 
 
-    # @property
-    # def channel_probs(self):
-    #     probs=np.zeros(self.n).astype("float")
-    #     for j in range(self.n):
-    #         probs[j]=self.channel_probs[j]
+    @property
+    def channel_probs(self):
+        probs=np.zeros(self.n).astype("float")
+        for j in range(self.n):
+            probs[j]=self.channel_probs[j]
 
-    #     return probs
+        return probs
 
-    # @property
-    # def bp_probs(self):
-    #     probs=np.zeros(self.n).astype("float")
-    #     for j in range(self.n):
-    #         probs[j]=self.log_prob_ratios[j]
+    @property
+    def bp_probs(self):
+        probs=np.zeros(self.n).astype("float")
+        for j in range(self.n):
+            probs[j]=self.log_prob_ratios[j]
 
-    #     return probs
-
-
-    # @property
-    # def bp_method(self):
-    #     if self.bp_method==0: return "mininum_sum"
-    #     elif self.bp_method==1: return "product_sum"
-
-    # @property
-    # def osd_method(self):
-    #     if self.osd_order==-1: return None
-    #     if self.osd_method==0: return "osd_0"
-    #     if self.osd_method==1: return "osd_e"
-    #     if self.osd_method==2: return "osd_cs"
+        return probs
 
 
+    @property
+    def bp_method(self):
+        if self.bp_method==0: return "mininum_sum"
+        elif self.bp_method==1: return "product_sum"
 
-    # @property
-    # def iter(self): return self.iter
+    @property
+    def osd_method(self):
+        if self.osd_order==-1: return None
+        if self.osd_method==0: return "osd_0"
+        if self.osd_method==1: return "osd_e"
+        if self.osd_method==2: return "osd_cs"
 
-    # @property
-    # def ms_scaling_factor(self): return self.ms_scaling_factor
+
+
+    @property
+    def iter(self): return self.bpd.iter
+
+    @property
+    def ms_scaling_factor(self): return self.ms_scaling_factor
 
     @property
     def max_iter(self): return self.max_iter
 
-    # @property
-    # def converge(self): return self.converge
+    @property
+    def converge(self): return self.bpd.converge
 
-    # @property
-    # def osd_order(self): return self.osd_order
+    @property
+    def osd_order(self): return self.osd_order
 
-    # @property
-    # def osdw_decoding(self): return char2numpy(self.osdw_decoding,self.n)
+    @property
+    def osdw_decoding(self): return char2numpy(self.osdw_decoding,self.n)
 
-    # @property
-    # def bp_decoding(self): return char2numpy(self.bp_decoding,self.n)
+    @property
+    def bp_decoding(self): return char2numpy(self.bp_decoding,self.n)
 
-    # @property
-    # def osd0_decoding(self): return char2numpy(self.osd0_decoding,self.n)
+    @property
+    def osd0_decoding(self): return char2numpy(self.osd0_decoding,self.n)
 
 
     def __dealloc__(self):
@@ -328,13 +337,13 @@ cdef class bposd:
                     free(self.osdw_encoding_inputs[i])
 
 
-def test():
+# def test():
 
-    H=np.array([[1,1,0],[0,1,1]])
+#     H=np.array([[1,1,0],[0,1,1]])
 
 
-    cdef mod2sparse *A
+#     cdef mod2sparse *A
 
-    cdef bposd bpd
-    bpd=bposd(H,0.01)
-    print(bpd.max_iter)
+#     cdef bposd bpd
+#     bpd=bposd(H,0.01)
+#     print(bpd.max_iter)

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include "sort.h"
+#include "mod2sparse.h"
 
 
 
