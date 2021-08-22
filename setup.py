@@ -2,18 +2,18 @@ from setuptools import setup, Extension
 from Cython.Build import cythonize
 import numpy
 import ldpc
-import os
 
-from distutils.dir_util import copy_tree
-from shutil import rmtree
+from shutil import copyfile
 
 ldpc_path=ldpc.get_include()+'/include'
+
+copyfile(ldpc_path+"/mod2sparse.c","src/bposd/include/mod2sparse.c")
 
 source_files=["src/bposd/bposd.pyx",
             "src/bposd/include/binary_char.c",
             "src/bposd/include/mod2sparse_extra.c",
             "src/bposd/include/sort.c",
-            ldpc_path+"/mod2sparse.c"]
+            "src/bposd/include/mod2sparse.c"]
 
 extension = Extension(
     name="bposd.bposd",
