@@ -3,8 +3,6 @@ from Cython.Build import cythonize
 import numpy
 import ldpc
 
-# from distutils.dir_util import copy_tree
-# from shutil import rmtree
 from shutil import copyfile
 
 ldpc_path=ldpc.get_include()+'/include'
