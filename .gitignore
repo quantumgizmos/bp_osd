@@ -4,6 +4,7 @@ build
 .idea
 cmake-build-debug
 dist
+zscratch
 
 #json files
 *json

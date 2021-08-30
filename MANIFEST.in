@@ -1,0 +1,6 @@
+include src/bposd/README.md
+include src/bposd/LICENSE
+include src/bposd/include/README.md
+include src/bposd/include/COPYRIGHT
+global-include *pxd
+global-include *h

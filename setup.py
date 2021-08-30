@@ -4,12 +4,11 @@ import numpy
 import ldpc
 
 from shutil import copyfile
-
-ldpc_path=ldpc.get_include()+'/include'
-copyfile(ldpc_path+"/mod2sparse.c","src/bposd/include/mod2sparse.c")
-copyfile(ldpc_path+"/mod2sparse.h","src/bposd/include/mod2sparse.h")
-copyfile(ldpc_path+"/README.md","src/bposd/include/README.md")
-copyfile(ldpc_path+"/COPYRIGHT","src/bposd/include/COPYRIGHT")
+ldpc_path=ldpc.get_include()+'/include/'
+include_files=["mod2sparse.c","mod2sparse.h","README.md","COPYRIGHT"]
+for f in include_files: copyfile(ldpc_path+f,"src/bposd/include/"+f)
+include_files=["README.md","LICENSE"]
+for f in include_files: copyfile(f,"src/bposd/"+f)
 
 source_files=["src/bposd/bposd.pyx",
             "src/bposd/include/binary_char.c",
@@ -37,12 +36,11 @@ setup(
     author='Joschka Roffe',
     packages=["bposd"],
     package_dir={'':'src'},
-    package_data = {'bposd': ['*.pxd']},
-    include_package_data=True,
-    zip_safe=False,
     ext_modules=cythonize([extension]),
     classifiers=['Development Status :: 1 - Planning'],
-    install_requires=["tqdm","scipy","ldpc","numpy"]
+    install_requires=["tqdm","scipy","ldpc","numpy"],
+    include_package_data=True,
+    zip_safe=False,
 
 )
 
