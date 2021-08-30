@@ -44,6 +44,7 @@ cdef class bposd_decoder:
         self.n=mat.shape[1]
 
         #setup BP decoder
+        #nb. couldn't get cython class inheritance to work so implemented it manually.
         self.bpd=bp_decoder(mat,error_rate=error_rate,\
         max_iter=max_iter,\
         ms_scaling_factor=ms_scaling_factor,\
@@ -61,11 +62,11 @@ cdef class bposd_decoder:
         self.channel_probs=self.bpd.channel_probs
         self.log_prob_ratios=self.bpd.log_prob_ratios
 
-        #memory allocation
+        #memory allocation for OSD specific attributes
         self.osd0_decoding=<char*>calloc(self.n,sizeof(char)) #the OSD_0 decoding
         self.osdw_decoding=<char*>calloc(self.n,sizeof(char)) #the osd_w decoding
 
-        #osd setup
+        #OSD setup
 
         # OSD method
         if str(osd_method).lower() in ['OSD_0','osd_0','0','osd0']:
@@ -78,7 +79,7 @@ cdef class bposd_decoder:
         elif str(osd_method).lower() in ['osd_cs','2','osdcs','combination_sweep','combination_sweep','cs']:
             osd_method=2
         else:
-            raise Exception(f"ERROR: OSD method '{osd_method}' invalid. Please choose from the following methods: 'OSD_0', 'OSD_E' or 'OSD_CS'.")
+            raise ValueError(f"ERROR: OSD method '{osd_method}' invalid. Please choose from the following methods: 'OSD_0', 'OSD_E' or 'OSD_CS'.")
 
         self.osd_order=int(osd_order)
         self.osd_method=int(osd_method)
@@ -335,9 +336,9 @@ cdef class bposd_decoder:
         str
         """
         if self.bp_method==0: return "product_sum"
-        elif self.bp_method==1: return "mininum_sum"
+        elif self.bp_method==1: return "minimum_sum"
         elif self.bp_method==2: return "product_sum_log"
-        elif self.bp_method==3: return "mininum_sum_log"
+        elif self.bp_method==3: return "minimum_sum_log"
 
     @property
     def iter(self):

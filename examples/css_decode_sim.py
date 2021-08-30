@@ -8,25 +8,26 @@ from bposd import bposd_decoder
 from bposd.css import css_code
 
 def css_decode_sim(
-        hx,
-        hz,
-        error_rate=0,
-        max_iter=0,
-        target_runs=100,
-        seed=0,
-        bp_method="ms",
-        ms_scaling_factor=0.625,
-        osd_order=40,
-        osd_method="osd_cs",
-        noise_type="x",
-        output_file=None,
-        save_interval=3,
+        hx, #x stabilisers
+        hz, #z stabilisers
+        error_rate=0, #error rate on each qubit
+        max_iter=0, #maximum number of iterations for BP( if ==0: max_iter=block_length)
+        target_runs=100, #number of runs to simulate
+        seed=0, #seed for rng. Automatically selected if set to 0/
+        bp_method="ms", #bp_method. Choose "minimum_sum" or "product_sum"
+        ms_scaling_factor=0.625, #If applicable, choose a `minimum_sum` scaling factor
+        osd_order=40, #The OSD search depth
+        osd_method="osd_cs", #OSD method
+        noise_type="x", #Noise type. Choose either "x" (bit) or "z" (phase)
+        output_file=None, #output file name
+        save_interval=3, #time interval for saving to the output file
         error_bar_precision_cutoff=1e-2,
         output_dict={},
         check_code=True,
         tqdm_disable=False
 ):
 
+    #
     start_date=datetime.datetime.fromtimestamp(time.time()).strftime("%A, %B %d, %Y %H:%M:%S")
     output_dict['start_date']=start_date
 
@@ -81,7 +82,7 @@ def css_decode_sim(
     print(f"BP Method: {bpd.bp_method}")
     print(f"OSD Method: {bpd.osd_method}")
 
-    if bpd.bp_method=="mininum_sum":
+    if bpd.bp_method=="minimum_sum":
         output_dict['ms_scaling_factor']=ms_scaling_factor
 
     if seed==0: seed=np.random.randint(low=1,high=2**32-1)

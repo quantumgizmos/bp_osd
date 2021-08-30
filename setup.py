@@ -8,6 +8,8 @@ from shutil import copyfile
 ldpc_path=ldpc.get_include()+'/include'
 copyfile(ldpc_path+"/mod2sparse.c","src/bposd/include/mod2sparse.c")
 copyfile(ldpc_path+"/mod2sparse.h","src/bposd/include/mod2sparse.h")
+copyfile(ldpc_path+"/README.md","src/bposd/include/README.md")
+copyfile(ldpc_path+"/COPYRIGHT","src/bposd/include/COPYRIGHT")
 
 source_files=["src/bposd/bposd.pyx",
             "src/bposd/include/binary_char.c",
