@@ -124,6 +124,7 @@ The hypergraph product can be used to construct a valid CSS code from any pair o
 
 
 ```python
+from ldpc.codes import rep_code
 from bposd.hgp import hgp
 h=rep_code(3)
 surface_code=hgp(h1=h,h2=h,compute_distance=True) #nb. set compute_distance=False for larger codes
@@ -159,9 +160,11 @@ bpd=bposd_decoder(
     surface_code.hz,#the parity check matrix
     error_rate=0.05,
     max_iter=surface_code.N, #the maximum number of iterations for BP)
-    bp_method="ps",
-    osd_method="osd_cs", #the OSD method
-    osd_order=-1)
+    bp_method="ms",
+    ms_scaling_factor=0, #min sum scaling factor. If set to zero the variable scaling factor method is used
+    osd_method="osd_cs", #the OSD method. Choose from:  1) "osd_e", "osd_cs", "osd0" 
+    osd_order=7 #the osd search depth
+    )
 ```
 
 We can then decode by passing a syndrome to the `bposd.bposd_decoder.decode` method:
@@ -176,9 +179,8 @@ bpd.decode(syndrome)
 print("Error")
 print(error)
 print("BP+OSD Decoding")
-print(bpd.bp_decoding)
-print(bpd.osd0_decoding)
 print(bpd.osdw_decoding)
+#Decoding is successful if the residual error commutes with the logical operators
 residual_error=(bpd.osdw_decoding+error) %2
 a=(surface_code.lz@residual_error%2).any()
 if a: a="Yes"
@@ -191,91 +193,6 @@ print(f"Logical Error: {a}\n")
     [0 0 0 0 0 1 0 0 0 0 0 0 1]
     BP+OSD Decoding
     [0 0 0 0 0 0 0 0 1 0 0 0 0]
-    [0 0 0 0 0 0 0 0 1 0 0 0 0]
     Logical Error: No
     
 
-
-
-```python
-
-
-
-def random_error(N,error_rate):
-    error=np.zeros(N).astype(int)
-
-    for i in range(N):
-        if np.random.random()<error_rate: error[i]=1
-        else: error[i]=0
-
-    return error
-
-error_rate=0.10
-
-bpd=bposd_decoder(
-    surface_code.hz,#the parity check matrix
-    error_rate=0.05,
-    max_iter=3, #the maximum number of iterations for BP)
-    bp_method="ps",
-    osd_method="osd_e", #the OSD method
-    osd_order=7)
-
-for i in range(3):
-    error=random_error(N=surface_code.N,error_rate=error_rate)
-    syndrome=surface_code.hz@error%2
-    bpd.decode(syndrome)
-    print("Error")
-    print(error)
-    print("BP+OSD Decoding")
-    print(bpd.osdw_decoding)
-    print(bpd.converge)
-    a=(surface_code.lz@((bpd.osdw_decoding+error) %2)%2).any()
-    if a: a="Yes"
-    else: a="No"
-    print(f"Logical Error: {a}\n")
-```
-
-    Error
-    [0 0 0 0 0 0 0 0 0 0 0 0 0]
-    BP+OSD Decoding
-    [0 0 0 0 0 0 0 0 0 0 0 0 0]
-    1
-    Logical Error: No
-    
-    Error
-    [0 0 0 0 0 0 0 0 0 0 0 0 0]
-    BP+OSD Decoding
-    [0 0 0 0 0 0 0 0 0 0 0 0 0]
-    1
-    Logical Error: No
-    
-    Error
-    [0 0 0 0 0 0 0 0 0 0 0 0 0]
-    BP+OSD Decoding
-    [0 0 0 0 0 0 0 0 0 0 0 0 0]
-    1
-    Logical Error: No
-    
-
-
-
-```python
-surface_code.hz
-```
-
-
-
-
-    array([[1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-           [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-           [0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0],
-           [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1],
-           [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0],
-           [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1]])
-
-
-
-
-```python
-
-```

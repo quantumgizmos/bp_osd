@@ -3,9 +3,8 @@ name: Build
 on:
   push:
     branches:
-      - main
-      - master
-
+      - release
+      
 jobs:
 
   build_wheels:
