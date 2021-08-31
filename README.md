@@ -1,5 +1,5 @@
 # BP+OSD: A decoder for quantum LDPC codes 
-A C library implementing belief propagation with ordered statistics post-processing for decoding sparse quantum LDPC codes as described in [arXiv:2005.07016](https://arxiv.org/abs/2005.07016).
+A Python library implementing belief propagation with ordered statistics post-processing for decoding sparse quantum LDPC codes as described in [arXiv:2005.07016](https://arxiv.org/abs/2005.07016).
 
 ## Installation from PyPi (recommended method)
 
