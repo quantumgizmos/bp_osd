@@ -2,6 +2,9 @@ from setuptools import setup, Extension
 from Cython.Build import cythonize
 import numpy
 import ldpc
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
 
 from shutil import copyfile
 ldpc_path=ldpc.get_include()+'/include/'
@@ -28,10 +31,10 @@ extension = Extension(
 setup(
     python_requires='>=3.6',
     name='bposd',
-    version='0.0.2',
+    version='0.0.3',
     description='BP+OSD',
-    long_description='This module provides an implementation of the belief\
-        propagagation + ordered statistics decoder for quantum LDPC codes.',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://roffe.eu',
     author='Joschka Roffe',
     packages=["bposd"],

@@ -88,6 +88,11 @@ cdef class bposd_decoder:
         
         if self.osd_order>-1:
             self.rank=mod2sparse_rank(self.H)
+            try:
+                assert self.osd_order<=(self.n - self.rank)
+            except AssertionError:
+                self.osd_order=-1
+                raise ValueError(f"For this code, the OSD order should be set in the range 0<=osd_oder<={self.n - self.rank}.")
             self.cols=<int*>calloc(self.n,sizeof(int)) 
             self.orig_cols=<int*>calloc(self.n,sizeof(int))
             self.rows=<int*>calloc(self.m,sizeof(int))
@@ -99,8 +104,7 @@ cdef class bposd_decoder:
             self.Htx=<char*>calloc(self.m,sizeof(char))
             self.Ht_cols=<int*>calloc(self.k,sizeof(int)) 
 
-
-        if self.osd_order==0: self.rank=mod2sparse_rank(self.H)
+        if osd_order==0: pass
         elif self.osd_order>0 and self.osd_method==1: self.osd_e_setup()
         elif self.osd_order>0 and self.osd_method==2: self.osd_cs_setup()
         elif self.osd_order==-1: pass
@@ -109,8 +113,6 @@ cdef class bposd_decoder:
         self.MEM_ALLOCATED=True
 
     cdef void osd_e_setup(self):
-
-        assert self.osd_order<=(self.n - self.rank)
 
         self.encoding_input_count=2**self.osd_order
         self.osdw_encoding_inputs=<char**>calloc(self.encoding_input_count,sizeof(char*))

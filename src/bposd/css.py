@@ -133,19 +133,19 @@ class css_code():
 
         try:
             assert not (self.hz@self.hx.T %2).any()
-            if show_tests: print(" -PCMS commute hz@hx.T==0: Pass")
+            if show_tests: print(" -PCMs commute hz@hx.T==0: Pass")
         except AssertionError:
             valid_code=False
-            print(" -PCMS commute hz@hx.T==0: Fail")
+            print(" -PCMs commute hz@hx.T==0: Fail")
 
         try:
             assert not (self.hx@self.hz.T %2).any()
-            if show_tests: print(" -PCMS commute hx@hz.T==0: Pass")
+            if show_tests: print(" -PCMs commute hx@hz.T==0: Pass")
         except AssertionError:
             valid_code=False
-            print(" -PCMS commute hx@hz.T==0: Fail")
+            print(" -PCMs commute hx@hz.T==0: Fail")
 
-        # if show_tests and valid_code: print("\t-PCMS commute hx@hz.T == hz@hx.T ==0: Pass")
+        # if show_tests and valid_code: print("\t-PCMs commute hx@hz.T == hz@hx.T ==0: Pass")
 
         try:
             assert not (self.hz@self.lx.T %2).any()
