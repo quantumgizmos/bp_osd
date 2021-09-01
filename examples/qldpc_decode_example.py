@@ -1,5 +1,5 @@
 import numpy as np
-from css_decode_sim import css_decode_sim
+from css_decode_sim import css_decode_sim as css_decode_sim
 from bposd.hgp import hgp_single
 
 #load the ldpc code from the file
@@ -12,6 +12,7 @@ output_dict=css_decode_sim(
     hx=hgp.hx, # CSS hx matrix
     hz=hgp.hz, # CSS hz matrix
     error_rate=0.05, # the physical error rate
+    # xyz_error_bias=[np.inf,0,0],
     max_iter=0, # If `0` iterations depth is set to block length n
     target_runs=1000, # the number of runs to simulate
     seed=42, # random seed
