@@ -312,6 +312,17 @@ cdef class bposd_decoder:
         mod2sparse_free(L)
         return 1
 
+    @property
+    def channel_probs(self):
+        """
+        numpy.ndarray: The initial error channel probabilities
+        """
+        probs=np.zeros(self.n).astype("float")
+        for j in range(self.n):
+            probs[j]=self.channel_probs[j]
+
+        return probs
+
     def update_channel_probs(self,channel):
         """
         Function updates the channel probabilities for each bit in the BP decoder.

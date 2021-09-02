@@ -3,423 +3,407 @@ from tqdm import tqdm
 import json
 import time
 import datetime
-from copy import copy
 
 from bposd import bposd_decoder
 from bposd.css import css_code
 
-
 class css_decode_sim2():
-    def __init__(self,hx=None,hz=None,**input_dict):
-    
-        default_input={
+
+    def __init__(self, hx=None, hz=None, **input_dict):
+
+        # default input values
+        default_input = {
             'error_rate': None,
-            'xyz_error_bias': [1,1,1], 
-            'channel_probs_x': [None],
-            'channel_probs_z': [None],
+            'xyz_error_bias': [1, 1, 1],
             'max_iter': 0,
             'target_runs': 100,
-            'seed':0,
-            'bp_method':"minimum_sum",
-            'ms_scaling_factor': 1.0,
+            'seed': 0,
+            'bp_method': "minimum_sum",
+            'ms_scaling_factor': 0.625,
             'osd_order': 2,
             'osd_method': "osd_cs",
+            'save_interval': 2,
             'output_file': None,
-            'check_code': True,
-            'tqdm_disable': False,
-            'run_sim': True
-            }
-
-        for key in input_dict.keys():
-            self.__dict__[key]=input_dict[key]
-
-        for key in default_input.keys():
-            if key not in input_dict:
-                self.__dict__[key]=default_input[key]
-
-        output_values={
-            "K": None,
-            "N":None,
-            "start_date": None,
-            "runtime":0,
-            "runtime_readable":None,
-            "run_count":0,
-            "bp_converge_count":0,
-            "bp_success_count":0,
-            "bp_logical_error_rate":0,
-            "bp_logical_error_rate_eb":0, 
-            "osd0_success_count":0,
-            "osd0_logical_error_rate":0,
-            "osd0_logical_error_rate_eb":0,
-            "osdw_success_count":0,
-            "osdw_logical_error_rate":0,
-            "osdw_logical_error_rate_eb":0,
-            "osdw_word_error_rate":0,
-            "osdw_word_error_rate_eb":0,
+            'check_code': 1,
+            'tqdm_disable': 0,
+            'run_sim': 1,
+            'channel_update': "x->z"
         }
 
-        for key in output_values.keys():
+        #apply defaults if not passed to class
+        for key in input_dict.keys():
+            self.__dict__[key] = input_dict[key]
+        for key in default_input.keys():
+            if key not in input_dict:
+                self.__dict__[key] = default_input[key]
+
+        # output variables
+        output_values = {
+            "K": None,
+            "N": None,
+            "start_date": None,
+            "runtime": 0.0,
+            "runtime_readable": None,
+            "run_count": 0,
+            "bp_converge_count_x": 0,
+            "bp_converge_count_z": 0,
+            "bp_success_count": 0,
+            "bp_logical_error_rate": 0,
+            "bp_logical_error_rate_eb": 0,
+            "osd0_success_count": 0,
+            "osd0_logical_error_rate": 0.0,
+            "osd0_logical_error_rate_eb": 0.0,
+            "osdw_success_count": 0,
+            "osdw_logical_error_rate": 0.0,
+            "osdw_logical_error_rate_eb": 0.0,
+            "osdw_word_error_rate": 0.0,
+            "osdw_word_error_rate_eb": 0.0,
+            "min_logical_weight": 0
+        }
+
+        for key in output_values.keys(): #copies initial values for output attributes
             if key not in self.__dict__:
-                self.__dict__[key]=output_values[key]
+                self.__dict__[key] = output_values[key]
 
-        temp=[]
+        temp = [] 
         for key in self.__dict__.keys():
-            temp.append(key)
-        self.output_keys=temp
+            if key not in ['channel_probs_x','channel_probs_z','channel_probs_y']:
+                temp.append(key)
+        self.output_keys = temp
 
-        self.hx=hx
-        self.hz=hz
+        if self.seed==0 or self.run_count!=0:
+            self.seed=np.random.randint(low=1,high=2**32-1)
+        np.random.seed(self.seed)
+        print(f"RNG Seed: {self.seed}")
+        
 
-        print("Constructing CSS code from hx and hz matrices...")
-        if isinstance(self.hx,np.ndarray) and isinstance(self.hz,np.ndarray):
-            
-            qcode=css_code(self.hx,self.hz)
-            self.lx=qcode.lx
-            self.lz=qcode.lz
-            self.K=qcode.K
-            self.N=qcode.N
+        # save the hx and hx matrices
+        self.hx = hx
+        self.hz = hz
+        self.N = self.hz.shape[1]
+        self.min_logical_weight = self.N
+        self.error_x = np.zeros(self.N).astype(int)
+        self.error_z = np.zeros(self.N).astype(int)
 
-            print("Checking the CSS code is valid...")
-            if self.check_code and not qcode.test():
-                raise Exception("Error: invalid CSS code. Check the form of your hx and hz matrices!")
-        else:
-            raise Exception("Invalid object type for the hx/hz matrices")
+        # construct the CSS code from hx and hz
+        self._construct_code()
 
+        # setup the error channel
+        self._error_channel_setup()
 
-        xyz_error_bias=np.array(self.xyz_error_bias)
-
-        if xyz_error_bias[0]==np.inf:
-            self.px=self.error_rate
-            self.py=0
-            self.pz=0
-        elif xyz_error_bias[1]==np.inf:
-            self.px=0
-            self.py=self.error_rate
-            self.pz=0
-        elif xyz_error_bias[2]==np.inf:
-            self.px=0
-            self.py=0
-            self.pz=self.error_rate
-        else:
-            self.px,self.py,self.pz=self.error_rate*xyz_error_bias/np.sum(xyz_error_bias)
-
-        self.channel_probs_x=np.ones(self.N)*(self.px+self.py)
-        self.channel_probs_z=np.ones(self.N)*(self.pz+self.py)
+        # setup the BP+OSD decoders
+        self._decoder_setup()
 
         if self.run_sim:
             self.run_decode_sim()
 
-    def output_dict(self):
-        output_dict={}
-        for key, value in self.__dict__.items():
-            if key in self.output_keys:
-                output_dict[key]=value
-        return json.dumps(output_dict,sort_keys=True, indent=4)
+    def _single_run(self):
 
-    def run_decode_sim(self):
-    
-        if np.sum(self.channel_probs_x)==0: self.INFINITE_Z_BIAS=True
-        else: self.INFINITE_Z_BIAS=False
+        # generate error
+        self.error_x, self.error_z = self._generate_error()
 
-        if np.sum(self.channel_probs_z)==0: self.INFINITE_X_BIAS=True
-        else: self.INFINITE_X_BIAS=False
+        if self.channel_update is None:
+            # decode z
+            synd_z = self.hx@self.error_z % 2
+            self.bpd_z.decode(synd_z)
 
-        print(self.INFINITE_X_BIAS)
-        print(self.INFINITE_Z_BIAS)
-        print(self.px,self.py,self.pz)
-        print('x',self.channel_probs_x)
-        print('z',self.channel_probs_z)
+            # decode x
+            synd_x = self.hz@self.error_x % 2
+            self.bpd_x.decode(synd_x)
 
-        #save start date
-        self.start_date=datetime.datetime.fromtimestamp(time.time()).strftime("%A, %B %d, %Y %H:%M:%S")
-        
-        bpd_z=bposd_decoder(
-            self.hx,
-            channel_probs=self.channel_probs_z,
-            max_iter=self.max_iter,
-            bp_method=self.bp_method,
-            ms_scaling_factor=self.ms_scaling_factor,
-            osd_method=self.osd_method,
-            osd_order=self.osd_order,
-            )
+        elif self.channel_update=="z->x":
+            # decode z
+            synd_z = self.hx@self.error_z % 2
+            self.bpd_z.decode(synd_z)
 
-        bpd_x=bposd_decoder(
-            self.hz,
-            channel_probs=self.channel_probs_x,
-            max_iter=self.max_iter,
-            bp_method=self.bp_method,
-            ms_scaling_factor=self.ms_scaling_factor,
-            osd_method=self.osd_method,
-            osd_order=self.osd_order,
-            )
+            #update the channel probability
+            self._channel_update(self.channel_update)
 
-        pbar=tqdm(range(self.run_count+1,self.target_runs+1),disable=self.tqdm_disable,ncols=0)
+            # decode x
+            synd_x = self.hz@self.error_x % 2
+            self.bpd_x.decode(synd_x)
 
-        start_time = time.time()
-        save_time=start_time
-        min_logical_weight=self.N
-
-        error_x=np.zeros(self.N).astype(int)
-        error_z=np.zeros(self.N).astype(int)
-
-        for run_count in pbar:
-
-            # print(run_count)
-            current_time=time.time()
-            elapsed_time=current_time-start_time
-            save_loop=current_time-save_time
-
-            #generate error
-            for i in range(self.N):
-                rand=np.random.random()
-                if rand<self.pz:
-                    error_z[i]=1
-                    error_x[i]=0
-                elif self.pz<=rand<(self.pz+self.px):
-                    error_z[i]=0
-                    error_x[i]=1
-                elif (self.pz+self.px)<=rand<(self.px+self.py+self.pz):
-                    error_z[i]=1
-                    error_x[i]=1
-                else:
-                    error_z[i]=0
-                    error_x[i]=0
+        elif self.channel_update=="x->z":
             
+            # decode x
+            synd_x = self.hz@self.error_x % 2
+            self.bpd_x.decode(synd_x)
+            
+            #update the channel probability
+            self._channel_update(self.channel_update)
 
             # decode z
-            if not self.INFINITE_X_BIAS:
-                synd_z=self.hx@error_z %2
-                bpd_z.decode(synd_z)
+            synd_z = self.hx@self.error_z % 2
+            self.bpd_z.decode(synd_z)
 
-            #decode x
-            if not self.INFINITE_Z_BIAS:
-                synd_x=self.hz@error_x %2
-                bpd_x.decode(synd_x)
+        #compute the logical and word error rates
+        self._encoded_error_rates()
 
-            ### osdw - checking for logical errors
-            #calculate the residual error
-      
-            residual_x=(error_x+bpd_x.osdw_decoding)%2
-            residual_z=(error_z+bpd_z.osdw_decoding)%2
-            if (self.lz@residual_x %2).any() and not self.INFINITE_Z_BIAS:
-                logical_weight=np.sum(residual_x)
-                if logical_weight<min_logical_weight:
-                    min_logical_weight=logical_weight
-            elif (self.lx@residual_z %2).any() and not self.INFINITE_X_BIAS:
-                logical_weight=np.sum(residual_z)
-                if logical_weight<min_logical_weight:
-                    min_logical_weight=logical_weight
-            else: self.osdw_success_count+=1
-            self.osdw_logical_error_rate=1-self.osdw_success_count/run_count
-            self.osdw_logical_error_rate_eb=np.sqrt((1-self.osdw_logical_error_rate)*self.osdw_logical_error_rate/run_count)
+    def _channel_update(self,update_direction):
 
-            self.osdw_word_error_rate=1.0 - (1-self.osdw_logical_error_rate)**(1/self.K)
-            self.osdw_word_error_rate_eb=self.osdw_logical_error_rate_eb*((1-self.osdw_logical_error_rate_eb)**(1/self.K -1))/self.K
-
-            # osdw_zx_logical_error_rate=osdw_zx_logical_errors/run_count
-            # osdw_zx_logical_error_rate_eb=np.sqrt((1-osdw_zx_logical_error_rate)*osdw_zx_logical_error_rate/run_count)
-            # osdw_xz_logical_error_rate=osdw_xz_logical_errors/run_count
-            # osdw_xz_logical_error_rate_eb=np.sqrt((1-osdw_xz_logical_error_rate)*osdw_xz_logical_error_rate/run_count)
-
-
+        if update_direction=="x->z":
+            decoder_probs=np.zeros(self.N)
+            for i in range(self.N):
+                if self.bpd_x.osdw_decoding[i]==1:
+                    if (self.channel_probs_x[i]+self.channel_probs_y[i])==0:
+                        decoder_probs[i]=0
+                    else:
+                        decoder_probs[i]=self.channel_probs_y[i]/(self.channel_probs_x[i]+self.channel_probs_y[i])
+                elif self.bpd_x.osdw_decoding[i]==0:
+                        decoder_probs[i]=self.channel_probs_y[i]/(1-self.channel_probs_x[i]-self.channel_probs_y[i])
         
-
-            pbar.set_description(
-f"d_max: {min_logical_weight}; \
-Error rate:OSDW_WER: {self.osdw_word_error_rate*100:.3g}±{self.osdw_word_error_rate_eb*100:.2g}%; \
-OSDW: {self.osdw_logical_error_rate*100:.3g}±{self.osdw_logical_error_rate_eb*100:.2g}%; \
-OSD0: {self.osd0_logical_error_rate*100:.3g}±{self.osd0_logical_error_rate_eb*100:.2g}%;")
+            self.bpd_z.update_channel_probs(decoder_probs)
 
 
-        #     if int(save_loop)>save_interval or run_count==target_runs:
-        #         save_time=time.time()
-        #         output_dict.update(dict(run_count=run_count))
-        #         output_dict.update(dict(observed_min_distance=int(min_logical_weight)))
-        #         output_dict.update(dict(osdw_logical_error_rate=osdw_logical_error_rate,osd0_logical_error_rate=osd0_logical_error_rate,osdw_logical_error_rate_eb=osdw_logical_error_rate_eb,osd0_logical_error_rate_eb=osd0_logical_error_rate_eb))
-        #         output_dict.update(dict(elapsed_sim_time=time.strftime('%H:%M:%S', time.gmtime(elapsed_time))))
-        #         output_dict.update(dict(osdw_success_count=osdw_success_count,osd0_success_count=osd0_success_count))
+        elif update_direction=="z->x":
+            self.bpd_z.osdw_decoding
+            decoder_probs=np.zeros(self.N)
+            for i in range(self.N):
+                if self.bpd_z.osdw_decoding[i]==1:
+                    
 
-        #         if output_file!=None:
-        #             f=open(output_file,"w+")
-        #             print(json.dumps(output_dict,sort_keys=True, indent=4),file=f)
-        #             f.close()
+                    if (self.channel_probs_z[i]+self.channel_probs_y[i])==0:
+                        decoder_probs[i]=0
+                    else:
+                        decoder_probs[i]=self.channel_probs_y[i]/(self.channel_probs_z[i]+self.channel_probs_y[i])
+                elif self.bpd_z.osdw_decoding[i]==0:
+                        decoder_probs[i]=self.channel_probs_y[i]/(1-self.channel_probs_z[i]-self.channel_probs_y[i])
 
-        #         if osdw_logical_error_rate_eb>0 and osdw_logical_error_rate_eb/osdw_logical_error_rate < error_bar_precision_cutoff:
-        #             print("\nTarget error bar precision reached. Stopping simulation...")
-        #             break
-
-        # print(f"{100*round(1-osdw_success_count/run_count,3)}%")
-        
-
-        # return json.dumps(self.output_dict(),sort_keys=True, indent=4)
-
-def css_decode_sim(
-        hx, #x stabilisers
-        hz, #z stabilisers
-        error_rate=0, #error rate on each qubit
-        max_iter=0, #maximum number of iterations for BP( if ==0: max_iter=block_length)
-        target_runs=100, #number of runs to simulate
-        seed=0, #seed for rng. Automatically selected if set to 0/
-        bp_method="ms", #bp_method. Choose "minimum_sum" or "product_sum"
-        ms_scaling_factor=0.625, #If applicable, choose a `minimum_sum` scaling factor
-        osd_order=40, #The OSD search depth
-        osd_method="osd_cs", #OSD method
-        noise_type="x", #Noise type. Choose either "x" (bit) or "z" (phase)
-        output_file=None, #output file name
-        save_interval=3, #time interval for saving to the output file
-        error_bar_precision_cutoff=1e-2,
-        output_dict={},
-        check_code=True,
-        tqdm_disable=False
-):
-
-    #
-    start_date=datetime.datetime.fromtimestamp(time.time()).strftime("%A, %B %d, %Y %H:%M:%S")
-    output_dict['start_date']=start_date
-
-    output_dict['run_type']="css_decode_sim"
-
-    if error_rate<=0:
-        raise Exception("Error: The error_rate input variable to simulate_bp_osd is not specified. It must have a value in the range 0.0<error_rate<1.0")
-
-    print("Constructing CSS code from hx and hz matrices...")
-    if isinstance(hx,np.ndarray) and isinstance(hz,np.ndarray):
-        qcode=css_code(hx,hz)
-        lx=qcode.lx
-        lz=qcode.lz
-        output_dict['K']=qcode.K
-        output_dict['N']=qcode.N
-
-        print("Checking the CSS code is valid...")
-        if check_code and not qcode.test():
-            raise Exception("Error: invalid CSS code. Check the form of your hx and hz matrices!")
-
-    else:
-        raise Exception("Invalid object type for the hx/hz matrices")
-
-
-    if noise_type.lower()=="phase" or noise_type.lower()=='z':
-        matrix_of_logicals=lx
-        H=hx
-    elif noise_type.lower()=="bit" or noise_type.lower()=="x":
-        matrix_of_logicals=lz
-        H=hz
-    else:
-        raise Exception("Error: noise-type must be either 'phase' or 'bit'")
-
-
-    m,n=H.shape
-
-
-    if max_iter==0:
-        max_iter=n
-
-    bpd=bposd_decoder(
-        H,
-        error_rate,
-        max_iter=max_iter,
-        bp_method=bp_method,
-        ms_scaling_factor=ms_scaling_factor,
-        osd_order=osd_order,
-        osd_method=osd_method
-    )
-
-
-    print(f"BP Method: {bpd.bp_method}")
-    print(f"OSD Method: {bpd.osd_method}")
-
-    if bpd.bp_method=="minimum_sum":
-        output_dict['ms_scaling_factor']=ms_scaling_factor
-
-    if seed==0: seed=np.random.randint(low=1,high=2**32-1)
-    np.random.seed(seed)
-
-
-    print(f"RNG Seed: {seed}")
-
-    bp_converge_count=0
-    bp_success=0
-    osd0_success=0
-    osdw_success=0
-
-
-    output_dict.update(dict(seed=seed,noise_type=noise_type,target_runs=target_runs,error_rate=error_rate,max_iter=max_iter,bp_method=bp_method,osd_order=osd_order,osd_method=osd_method))
-
-    start_time = time.time()
-    save_time=start_time
-    pbar=tqdm(range(1,target_runs+1),disable=tqdm_disable,ncols=0)
-    error=np.zeros(n).astype(int)
-    for run_count in pbar:
-
-        for j in range(n):
-            if np.random.random()<error_rate:
-                error[j]=1
-            else: error[j]=0
-
-        syndrome=H@error%2
-
-        osdw_decoding=bpd.decode(syndrome)
-        
-        bp_decoding=bpd.bp_decoding
-        bp_residual=(bp_decoding+error)%2
-        if bpd.converge:
-            bp_converge_count+=1
-            if not (matrix_of_logicals@bp_residual % 2).any(): bp_success+=1
-
-        osd0_decoding=bpd.osd0_decoding
-        osd0_residual=(osd0_decoding+error)%2
-        if bpd.converge or bpd.osd_order>-1:
-            if not (matrix_of_logicals@osd0_residual % 2).any(): osd0_success+=1
-        
-
-        osdw_residual=(osdw_decoding+error)%2
-        if bpd.converge or bpd.osd_order>-1:
-            if not (matrix_of_logicals@osdw_residual % 2).any(): osdw_success+=1
-        
-        bp_converge_logical_error_rate=1-bp_converge_count/run_count
-        bp_logical_error_rate=1-bp_success/run_count
-        bp_logical_error_rate_eb=np.sqrt((1-bp_logical_error_rate)*bp_logical_error_rate/run_count)
-
-        osd0_logical_error_rate=1-osd0_success/run_count
-        osd0_logical_error_rate_eb=np.sqrt((1-osd0_logical_error_rate)*osd0_logical_error_rate/run_count)
-        osdw_logical_error_rate=1-osdw_success/run_count
-        osdw_logical_error_rate_eb=np.sqrt((1-osdw_logical_error_rate)*osdw_logical_error_rate/run_count)
-
-
-        pbar.set_description(f"Error rate: OSDW: {osdw_logical_error_rate*100:.3g}±{osdw_logical_error_rate_eb*100:.2g}%; OSD0: {osd0_logical_error_rate*100:.3g}±{osd0_logical_error_rate_eb*100:.2g}%; BP: {bp_logical_error_rate*100:.3g}±{bp_logical_error_rate_eb*100:.2g}%")
-
-        current_time=time.time()
-        elapsed_time=current_time-start_time
-        save_loop=current_time-save_time
-
-        if int(save_loop)>save_interval or run_count==target_runs:
-            save_time=time.time()
-            output_dict.update(dict(run_count=run_count))
-            output_dict.update(dict(bp_converge_logical_error_rate=bp_converge_logical_error_rate,osdw_logical_error_rate=osdw_logical_error_rate,osd0_logical_error_rate=osd0_logical_error_rate,bp_logical_error_rate=bp_logical_error_rate,osdw_logical_error_rate_eb=osdw_logical_error_rate_eb,osd0_logical_error_rate_eb=osd0_logical_error_rate_eb,bp_logical_error_rate_eb=bp_logical_error_rate_eb))
-            output_dict.update(dict(elapsed_sim_time=time.strftime('%H:%M:%S', time.gmtime(elapsed_time))))
-            output_dict.update(dict(bp_success_count=bp_success,osdw_success_count=osdw_success,osd0_success_count=osd0_success))
-
-            if output_file!=None:
-                f=open(output_file,"w+")
-                print(json.dumps(output_dict,sort_keys=True, indent=4),file=f)
-                f.close()
-
-            if osdw_logical_error_rate_eb>0 and osdw_logical_error_rate_eb/osdw_logical_error_rate < error_bar_precision_cutoff:
-                print("\nTarget error bar precision reached. Stopping simulation...")
-                break
-
-
-    return json.dumps(output_dict,sort_keys=True, indent=4)
+            
+            self.bpd_x.update_channel_probs(decoder_probs)
 
 
 
+    def _encoded_error_rates(self):
+
+        #OSDW Logical error rate
+        # calculate the residual error
+        residual_x = (self.error_x+self.bpd_x.osdw_decoding) % 2
+        residual_z = (self.error_z+self.bpd_z.osdw_decoding) % 2
+
+        # check for logical X-error
+        if (self.lz@residual_x % 2).any():
+            logical_weight = np.sum(residual_x)
+            if logical_weight < self.min_logical_weight:
+                self.min_logical_weight = int(logical_weight)
+
+        # check for logical Z-error
+        elif (self.lx@residual_z % 2).any():
+            logical_weight = np.sum(residual_z)
+            if logical_weight < self.min_logical_weight:
+                self.min_logical_weight = int(logical_weight)
+        else:
+            self.osdw_success_count += 1
+
+        # compute logical error rate
+        self.osdw_logical_error_rate = 1-self.osdw_success_count/self.run_count
+        self.osdw_logical_error_rate_eb = np.sqrt(
+            (1-self.osdw_logical_error_rate)*self.osdw_logical_error_rate/self.run_count)
+
+        # compute word error rate
+        self.osdw_word_error_rate = 1.0 - \
+            (1-self.osdw_logical_error_rate)**(1/self.K)
+        self.osdw_word_error_rate_eb = self.osdw_logical_error_rate_eb * \
+            ((1-self.osdw_logical_error_rate_eb)**(1/self.K - 1))/self.K
+
+        #OSD0 logical error rate
+        # calculate the residual error
+        residual_x = (self.error_x+self.bpd_x.osd0_decoding) % 2
+        residual_z = (self.error_z+self.bpd_z.osd0_decoding) % 2
+
+        # check for logical X-error
+        if (self.lz@residual_x % 2).any():
+            logical_weight = np.sum(residual_x)
+            if logical_weight < self.min_logical_weight:
+                self.min_logical_weight = int(logical_weight)
+
+        # check for logical Z-error
+        elif (self.lx@residual_z % 2).any():
+            logical_weight = np.sum(residual_z)
+            if logical_weight < self.min_logical_weight:
+                self.min_logical_weight = int(logical_weight)
+        else:
+            self.osd0_success_count += 1
+
+        # compute logical error rate
+        self.osd0_logical_error_rate = 1-self.osd0_success_count/self.run_count
+        self.osd0_logical_error_rate_eb = np.sqrt(
+            (1-self.osd0_logical_error_rate)*self.osd0_logical_error_rate/self.run_count)
+
+        # compute word error rate
+        self.osd0_word_error_rate = 1.0 - \
+            (1-self.osd0_logical_error_rate)**(1/self.K)
+        self.osd0_word_error_rate_eb = self.osd0_logical_error_rate_eb * \
+            ((1-self.osd0_logical_error_rate_eb)**(1/self.K - 1))/self.K
+
+        #BP Logical error rate
+        #check for convergence
+        if self.bpd_z.converge:
+            self.bp_converge_count_z+=1
+        if self.bpd_x.converge:
+            self.bp_converge_count_x+=1
+
+        if self.bpd_z.converge and self.bpd_x.converge:
+            # calculate the residual error
+            residual_x = (self.error_x+self.bpd_x.bp_decoding) % 2
+            residual_z = (self.error_z+self.bpd_z.bp_decoding) % 2
+
+            # check for logical X-error
+            if (self.lz@residual_x % 2).any():
+                pass
+
+            # check for logical Z-error
+            elif (self.lx@residual_z % 2).any():
+                pass
+            else:
+                self.bp_success_count += 1
+
+        # compute logical error rate
+        self.bp_logical_error_rate = 1-self.bp_success_count/self.run_count
+        self.bp_logical_error_rate_eb = np.sqrt(
+            (1-self.bp_logical_error_rate)*self.bp_logical_error_rate/self.run_count)
+
+        # compute word error rate
+        self.bp_word_error_rate = 1.0 - \
+            (1-self.bp_logical_error_rate)**(1/self.K)
+        self.bp_word_error_rate_eb = self.bp_logical_error_rate_eb * \
+            ((1-self.bp_logical_error_rate_eb)**(1/self.K - 1))/self.K
+
+    def _construct_code(self):
+
+        print("Constructing CSS code from hx and hz matrices...")
+        if isinstance(self.hx, np.ndarray) and isinstance(self.hz, np.ndarray):
+            qcode = css_code(self.hx, self.hz)
+            self.lx = qcode.lx
+            self.lz = qcode.lz
+            self.K = qcode.K
+            self.N = qcode.N
+            print("Checking the CSS code is valid...")
+            if self.check_code and not qcode.test():
+                raise Exception(
+                    "Error: invalid CSS code. Check the form of your hx and hz matrices!")
+        else:
+            raise Exception("Invalid object type for the hx/hz matrices")
+        return None
+
+    def _error_channel_setup(self):
+
+        xyz_error_bias = np.array(self.xyz_error_bias)
+        if xyz_error_bias[0] == np.inf:
+            self.px = self.error_rate
+            self.py = 0
+            self.pz = 0
+        elif xyz_error_bias[1] == np.inf:
+            self.px = 0
+            self.py = self.error_rate
+            self.pz = 0
+        elif xyz_error_bias[2] == np.inf:
+            self.px = 0
+            self.py = 0
+            self.pz = self.error_rate
+        else:
+            self.px, self.py, self.pz = self.error_rate * \
+                xyz_error_bias/np.sum(xyz_error_bias)
+
+        self.channel_probs_x = np.ones(self.N)*(self.px)
+        self.channel_probs_z = np.ones(self.N)*(self.pz)
+        self.channel_probs_y = np.ones(self.N)*(self.py)
+
+        self.channel_probs_x.setflags(write=False)
+        self.channel_probs_y.setflags(write=False)
+        self.channel_probs_z.setflags(write=False)
+
+
+        # self.xyz_error_bias = xyz_error_bias
+
+    def _decoder_setup(self):
+
+        # decoder for Z errors
+        self.bpd_z = bposd_decoder(
+            self.hx,
+            channel_probs=self.channel_probs_z+self.channel_probs_y,
+            max_iter=self.max_iter,
+            bp_method=self.bp_method,
+            ms_scaling_factor=self.ms_scaling_factor,
+            osd_method=self.osd_method,
+            osd_order=self.osd_order,
+        )
+
+        # decoder for X-errors
+        self.bpd_x = bposd_decoder(
+            self.hz,
+            channel_probs=self.channel_probs_x+self.channel_probs_y,
+            max_iter=self.max_iter,
+            bp_method=self.bp_method,
+            ms_scaling_factor=self.ms_scaling_factor,
+            osd_method=self.osd_method,
+            osd_order=self.osd_order,
+        )
+
+    def _generate_error(self):
+        for i in range(self.N):
+            rand = np.random.random()
+            if rand < self.channel_probs_z[i]:
+                self.error_z[i] = 1
+                self.error_x[i] = 0
+            elif self.channel_probs_z[i] <= rand < (self.channel_probs_z[i]+self.channel_probs_x[i]):
+                self.error_z[i] = 0
+                self.error_x[i] = 1
+            elif (self.channel_probs_z[i]+self.channel_probs_x[i]) <= rand < (self.channel_probs_x[i]+self.channel_probs_y[i]+self.channel_probs_z[i]):
+                self.error_z[i] = 1
+                self.error_x[i] = 1
+            else:
+                self.error_z[i] = 0
+                self.error_x[i] = 0
+
+        return self.error_x, self.error_z
+ 
+    def run_decode_sim(self):
+
+        # save start date
+        self.start_date = datetime.datetime.fromtimestamp(
+            time.time()).strftime("%A, %B %d, %Y %H:%M:%S")
+
+        pbar = tqdm(range(self.run_count+1, self.target_runs+1),
+                    disable=self.tqdm_disable, ncols=0)
+
+        start_time = time.time()
+        save_time = start_time
+
+        for self.run_count in pbar:
+
+            self._single_run()
+
+            pbar.set_description(f"d_max: {self.min_logical_weight}; Error rate: OSDW_WER: {self.osdw_word_error_rate*100:.3g}±{self.osdw_word_error_rate_eb*100:.2g}%; OSDW: {self.osdw_logical_error_rate*100:.3g}±{self.osdw_logical_error_rate_eb*100:.2g}%; OSD0: {self.osd0_logical_error_rate*100:.3g}±{self.osd0_logical_error_rate_eb*100:.2g}%;")
+
+            current_time = time.time()
+            save_loop = current_time-save_time
+
+            if int(save_loop)>self.save_interval or self.run_count==self.target_runs:
+                save_time=time.time()
+                self.runtime = save_loop +self.runtime
+
+                self.runtime_readable=time.strftime('%H:%M:%S', time.gmtime(self.runtime))
+
+
+                if self.output_file!=None:
+                    f=open(self.output_file,"w+")
+                    print(self.output_dict(),file=f)
+                    f.close()
+
+                # if osdw_logical_error_rate_eb>0 and osdw_logical_error_rate_eb/osdw_logical_error_rate < error_bar_precision_cutoff:
+                #     print("\nTarget error bar precision reached. Stopping simulation...")
+                #     break
+
+        return json.dumps(self.output_dict(),sort_keys=True, indent=4)
+
+    def output_dict(self):
+        output_dict = {}
+        for key, value in self.__dict__.items():
+            if key in self.output_keys:
+                output_dict[key] = value
+        # return output_dict
+        return json.dumps(output_dict,sort_keys=True, indent=4)
 
 
 
-
-
-    
-
-
-
-    
