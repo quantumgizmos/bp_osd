@@ -7,14 +7,16 @@ from css_decode_sim2 import css_decode_sim2
 osd_options={
 'error_rate': 0.05,
 'target_runs': 1000,
-'xyz_error_bias': [1, 1, 1],
+'xyz_error_bias': [0, 0, 1],
 'output_file': 'test.json',
 'bp_method': "ms",
+'ms_scaling_factor': 0,
 'osd_method': "osd_cs",
-'osd_osder': 40,
-'channel_update': "z->x",
-'seed': 45,
-'max_iter': 30
+'osd_order': 40,
+'channel_update': None,
+'seed': 42,
+'max_iter': 0,
+'output_file': "test.json"
 }
 
 qcode=hgp(rep_code(3))
