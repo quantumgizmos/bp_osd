@@ -31,7 +31,7 @@ extension = Extension(
 setup(
     python_requires='>=3.6',
     name='bposd',
-    version='0.0.4',
+    version='0.0.5',
     description='BP+OSD',
     long_description=long_description,
     long_description_content_type='text/markdown',
