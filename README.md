@@ -59,7 +59,7 @@ Where
 - "lx_filename": path to lx logical matrix alist file. Only necessary if "logical_check_method" is set to "lx" 
 - "code_label": whatever you like
 -  "logical_check_method": "hz" or "lx". See notes below.
-- "input_seed": the input seed for the Mersenne twister random number generator
+- "input_seed": the input seed for the Mersenne twister random number generator. Note if >0 that seed is used, otherwise the seed is generated from the current time.
 - "bit_error_rate": the bit error rate
 - "target_runs": the number of runs you would like to simulate
 - "osd_order": the osd order parameter
