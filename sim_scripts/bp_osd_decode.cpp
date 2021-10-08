@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <ctime>
 
 #include "bp_osd_c.hpp"
 using namespace std;
@@ -28,11 +29,11 @@ int main(int argc, char *argv[])
     };
 
     //timing functions setup
-    timing time;
-    cout<<"Start time: "<<time.start_time_string<<endl;
+    timing simtime;
+    cout<<"Start time: "<<simtime.start_time_string<<endl;
     cout<<"Input file: "<<argv[1]<<endl;
     int elapsed_seconds;
-    elapsed_seconds=time.elapsed_time_seconds();
+    elapsed_seconds=simtime.elapsed_time_seconds();
 
     //read in json input file
     ifstream json_input_file(argv[1]);
@@ -44,15 +45,20 @@ int main(int argc, char *argv[])
     //get input file from command line arguments
     output["input_file"]=argv[1];
 
-    //setup random number generator
+    //setup random number generator. If seed is <=0 then use current time for seed.
     int random_seed = json_read_safe(output,"input_seed");
+    if (random_seed <= 0) {
+      time_t now = time(0);
+      random_seed = (int)now;
+    }
     MTRand r=setup_mtwister_rng(random_seed);
+    output["seed"]=random_seed;
 
     //save start time
-    output["start_time"] = time.start_time_string;
+    output["start_time"] = simtime.start_time_string;
 
     //generate UI from start time + random seed
-    unsigned long long int ui =time.start_time_seconds+random_seed;
+    unsigned long long int ui =simtime.start_time_seconds+random_seed;
     output["ui"]=ui;
 
     //read in sim parameters
@@ -252,14 +258,14 @@ int main(int argc, char *argv[])
 
 
         //write to output every 3 seconds. Change this as you see fit
-        if((time.elapsed_time_seconds()-elapsed_seconds>3) | (run_count==target_runs) ){
+        if((simtime.elapsed_time_seconds()-elapsed_seconds>3) | (run_count==target_runs) ){
 
             //calculate logical error rates
             osdw_ler= 1.0 - osdw_success_count / (double(run_count));
             osd0_ler= 1.0 - osd0_success_count / (double(run_count));
             bp_ler= 1.0 - bp_success_count / (double(run_count));
 
-            elapsed_seconds=time.elapsed_time_seconds();
+            elapsed_seconds=simtime.elapsed_time_seconds();
 
             output["run_count"] = run_count;
             output["osdw_success_count"]=osdw_success_count;
@@ -269,6 +275,7 @@ int main(int argc, char *argv[])
             output["osdw_ler"] = osdw_ler;
             output["osd0_ler"] = osd0_ler;
             output["bp_ler"] = bp_ler;
+
             output["runtime_seconds"] = time.elapsed_time_seconds();
             output["runtime_readable"] = time.elapsed_time_readable();
             output["max_iterations_before_converge"]=max_iterations_before_converge;
@@ -277,6 +284,7 @@ int main(int argc, char *argv[])
             cout << "Runs: " << run_count << "; OSDW_LER: " << osdw_ler << "; OSD0_LER: " << osd0_ler << "; BP_LER: " << bp_ler << "; Iter. (min/avg/max)" << min_iterations_before_converge << "/"
 		 << average_iterations_before_converge << "/" << max_iterations_before_converge <<
 	      "; Runtime: " << output["runtime_readable"] << endl;
+
 
             //command line output
             ofstream output_file(output_filename.str(),ofstream::trunc);
