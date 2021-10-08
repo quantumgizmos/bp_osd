@@ -1,7 +1,6 @@
 #directories
 build
 .idea
-.vscode
 cmake-build-debug
 
 #swp files

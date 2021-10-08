@@ -28,6 +28,14 @@ int main(int argc, char *argv[])
         exit(22);
     };
 
+//    if(argv[3]==nullptr){
+//        cout<<"ERROR: Please select a method for verifying the recovered error"<<endl;
+//        exit(22);
+//    } else if ( strcmp(argv[3],"-lx") != 0 && strcmp(argv[3],"-hz") != 0  ) {
+//        cout<<"ERROR: Please select a valid method for verifying the recovered error"<<endl;
+//        exit(22);
+//    };
+
     //timing functions setup
     timing simtime;
     cout<<"Start time: "<<simtime.start_time_string<<endl;
@@ -175,10 +183,6 @@ int main(int argc, char *argv[])
     double osdw_ler;
     double osd0_ler;
     double bp_ler;
-    double average_iterations_before_converge=-1;
-    int min_iterations_before_converge=hx_n;
-    int max_iterations_before_converge=-1;
-    
 
 
 
@@ -230,22 +234,6 @@ int main(int argc, char *argv[])
             if (*hx_bp_osd.converge == 1) {
                 bp_converge_count++;
 
-                if (*hx_bp_osd.iter>max_iterations_before_converge){
-                    max_iterations_before_converge=*hx_bp_osd.iter+1;
-                }
-
-                if (*hx_bp_osd.iter<min_iterations_before_converge){
-                    min_iterations_before_converge=*hx_bp_osd.iter+1;
-                }
-
-                if (average_iterations_before_converge==-1){
-                    average_iterations_before_converge=*hx_bp_osd.iter+1;
-                }
-                else{
-
-                    average_iterations_before_converge=((bp_converge_count-1)*average_iterations_before_converge+*hx_bp_osd.iter+1)/bp_converge_count;
-                }
-
                 if (logical_check_method=="lx") {
                     logical_error = check_logical_error_lx(lx, bit_error, hx_bp_osd.bp_decoding);
                 } else {
@@ -275,16 +263,9 @@ int main(int argc, char *argv[])
             output["osdw_ler"] = osdw_ler;
             output["osd0_ler"] = osd0_ler;
             output["bp_ler"] = bp_ler;
-
-            output["runtime_seconds"] = time.elapsed_time_seconds();
-            output["runtime_readable"] = time.elapsed_time_readable();
-            output["max_iterations_before_converge"]=max_iterations_before_converge;
-            output["min_iterations_before_converge"]=min_iterations_before_converge;
-            output["average_iterations_before_converge"]=average_iterations_before_converge;
-            cout << "Runs: " << run_count << "; OSDW_LER: " << osdw_ler << "; OSD0_LER: " << osd0_ler << "; BP_LER: " << bp_ler << "; Iter. (min/avg/max)" << min_iterations_before_converge << "/"
-		 << average_iterations_before_converge << "/" << max_iterations_before_converge <<
-	      "; Runtime: " << output["runtime_readable"] << endl;
-
+            output["runtime_seconds"] = simtime.elapsed_time_seconds();
+            output["runtime_readable"] = simtime.elapsed_time_readable();
+            cout << "Runs: " << run_count << "; OSDW_LER: " << osdw_ler << "; OSD0_LER: " << osd0_ler << "; BP_LER: " << bp_ler << "; Runtime: " << output["runtime_readable"] << endl;
 
             //command line output
             ofstream output_file(output_filename.str(),ofstream::trunc);
