@@ -490,3 +490,11 @@ cdef class bposd_decoder:
                 for i in range(self.encoding_input_count):
                     free(self.osdw_encoding_inputs[i])
 
+
+cpdef int m2s_rank(mat):
+    cdef mod2sparse *A
+    cdef int rank
+    A=numpy2mod2sparse(mat)
+    rank= mod2sparse_rank(A)
+    mod2sparse_free(A)
+    return rank

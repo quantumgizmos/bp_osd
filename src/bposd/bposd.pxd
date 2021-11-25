@@ -7,6 +7,8 @@ from ldpc.mod2sparse cimport *
 from ldpc.c_util cimport numpy2char, char2numpy, numpy2double, double2numpy
 from ldpc.bp_decoder cimport bp_decoder
 
+cpdef int m2s_rank(mat)
+
 cdef extern from "binary_char.h":
     cdef void print_char_nonzero(char *val,int len)
     cdef int bin_char_equal(char *vec1, char *vec2, int len)
