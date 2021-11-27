@@ -22,23 +22,41 @@ int mod2sparse_rank(mod2sparse *A){
     cols=chk_alloc(N,sizeof(*rows));
     rows=chk_alloc(M,sizeof(*cols));
 
-    L=mod2sparse_allocate(M,M);
-    U=mod2sparse_allocate(M,N);
-
     int abandon_number=0;  	/* Number of columns to abandon at some point *//* When to abandon these columns */
     int abandon_when=0;
+
+    int submatrix_size;
+
+    if(M==N){
+        submatrix_size=M;
+        // abandon_when=0;
+    }
+
+    if(M>N){
+        submatrix_size=N;
+        // abandon_when=N;
+    }
+
+    if(N>M){
+        submatrix_size=M;
+        // abandon_when=M;
+    }
+    
+    L=mod2sparse_allocate(M,submatrix_size);
+    U=mod2sparse_allocate(submatrix_size,N);
+
     mod2sparse_strategy strategy =Mod2sparse_first;/* Strategy to follow in picking rows/columns */
 
     nnf=mod2sparse_decomp
             (A,	/* Input matrix, M by N */
-             M,		/* Size of sub-matrix to find LU decomposition of */
+             submatrix_size,		/* Size of sub-matrix to find LU decomposition of */
              L,	/* Matrix in which L is stored, M by R */
              U,	/* Matrix in which U is stored, R by N */
              rows,		/* Array where row indexes are stored, M long */
              cols,		/* Array where column indexes are stored, N long */
-             strategy, /* Strategy to follow in picking rows/columns */
-             abandon_number,	/* Number of columns to abandon at some point */
-             abandon_when	/* When to abandon these columns */
+            strategy,
+            abandon_number,
+            abandon_when
             );
 
 
@@ -47,7 +65,7 @@ int mod2sparse_rank(mod2sparse *A){
     mod2sparse_free(L);
     mod2sparse_free(U);
 
-    rank=M-nnf;
+    rank=submatrix_size-nnf;
 
     return rank;
 
