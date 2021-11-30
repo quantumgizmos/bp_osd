@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - release
+      - dev
       
 jobs:
 
@@ -12,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest,windows-latest,macos-latest]
+        os: [ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v2
@@ -28,7 +29,7 @@ jobs:
 
       - name: Build wheels
         env:
-          CIBW_SKIP: pp* cp27-* cp33-* cp34-* cp35-*
+          CIBW_SKIP: pp* cp27-* cp33-* cp34-* cp35-* cp36-* cp37-*
         run: |
           python -m cibuildwheel --output-dir wheelhouse
 

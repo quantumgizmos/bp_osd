@@ -31,7 +31,7 @@ extension = Extension(
 setup(
     python_requires='>=3.6',
     name='bposd',
-    version='0.0.7',
+    version='0.0.8',
     description='BP+OSD',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -41,7 +41,7 @@ setup(
     package_dir={'':'src'},
     ext_modules=cythonize([extension]),
     classifiers=['Development Status :: 1 - Planning'],
-    install_requires=["tqdm","scipy","ldpc",f"numpy=={numpy.__version__}"],
+    install_requires=["tqdm",f"numpy=={numpy.__version__}","scipy","ldpc"],
     include_package_data=True,
     zip_safe=False,
 )
