@@ -21,6 +21,7 @@ cdef extern from "binary_char.h":
 
 cdef extern from "sort.h":
     cdef void soft_decision_col_sort(double *soft_decisions,int *cols, int N)
+    cdef unsigned long long ncr(int n, int k)
 
 cdef extern from "mod2sparse_extra.h":
     cdef void mod2sparse_print_terminal (mod2sparse *A)

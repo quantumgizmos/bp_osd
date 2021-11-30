@@ -41,7 +41,7 @@ setup(
     package_dir={'':'src'},
     ext_modules=cythonize([extension]),
     classifiers=['Development Status :: 1 - Planning'],
-    install_requires=["tqdm",f"numpy=={numpy.__version__}","scipy","ldpc"],
+    install_requires=["tqdm",f"numpy=={numpy.__version__}","ldpc"],
     include_package_data=True,
     zip_safe=False,
 )

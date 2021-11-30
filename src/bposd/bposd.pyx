@@ -1,7 +1,6 @@
 #cython: language_level=3, boundscheck=False, wraparound=False, initializedcheck=False, cdivision=True
 
 import numpy as np
-from scipy.special import comb as nCr
 
 cdef class bposd_decoder:
 
@@ -126,7 +125,7 @@ cdef class bposd_decoder:
         assert self.osd_order<=kset_size
 
 
-        self.encoding_input_count=kset_size+nCr(self.osd_order,2)
+        self.encoding_input_count=kset_size+ncr(self.osd_order,2)
         
         self.osdw_encoding_inputs=<char**>calloc(self.encoding_input_count,sizeof(char*))
         cdef int total_count=0
