@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - release
-      
+
 jobs:
 
   build_wheels:
@@ -17,29 +17,28 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-python@v2
-        name: Install Python
-        with:
-          python-version: '3.7'
-
-      - name: Install cibuildwheel and twine
-        run: |
-          python -m pip install cibuildwheel==1.7.4 twine
-
       - name: Build wheels
+        uses: pypa/cibuildwheel@v2.3.0
         env:
-          CIBW_SKIP: pp* cp27-* cp33-* cp34-* cp35-*
-        run: |
-          python -m cibuildwheel --output-dir wheelhouse
+          CIBW_SKIP: '*_i686 *musllinux* pp* cp27-* cp33-* cp34-* cp35-*'
 
       - uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
 
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.7'
+
+      - name: Install twine
+        run: |
+          python -m pip install twine
+
       - name: Build and publish
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.BPOSD_PYPI_PASSWORD }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           twine upload ./wheelhouse/*
 

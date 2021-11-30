@@ -6,6 +6,11 @@ from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
+VERSION="0.0.8"
+f=open("src/bposd/VERSION","w+")
+f.write(VERSION)
+f.close()
+
 from shutil import copyfile
 ldpc_path=ldpc.get_include()+'/include/'
 include_files=["mod2sparse.c","mod2sparse.h","README.md","COPYRIGHT"]
@@ -31,7 +36,7 @@ extension = Extension(
 setup(
     python_requires='>=3.6',
     name='bposd',
-    version='0.0.7',
+    version=VERSION,
     description='BP+OSD',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -41,7 +46,7 @@ setup(
     package_dir={'':'src'},
     ext_modules=cythonize([extension]),
     classifiers=['Development Status :: 1 - Planning'],
-    install_requires=["tqdm","scipy","ldpc",f"numpy=={numpy.__version__}"],
+    install_requires=["tqdm","scipy",f"ldpc=={ldpc.__version__}",f"numpy=={numpy.__version__}"],
     include_package_data=True,
     zip_safe=False,
 )

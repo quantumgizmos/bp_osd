@@ -2,5 +2,6 @@ include src/bposd/README.md
 include src/bposd/LICENSE
 include src/bposd/include/README.md
 include src/bposd/include/COPYRIGHT
+include src/bposd/VERSION
 global-include *pxd
 global-include *h
