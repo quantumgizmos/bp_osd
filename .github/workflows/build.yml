@@ -23,9 +23,11 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Install BLAS LAPACK
-        run: sudo apt-get install -y gfortran libopenblas-dev liblapack-dev
-
+  
+      - name: Upgrade Pip
+        run: |
+          pip install --upgrade pip  
+            
 
       - name: Install cibuildwheel and twine
         run: |
@@ -33,7 +35,7 @@ jobs:
 
       - name: Build wheels
         env:
-          CIBW_SKIP: pp* cp27-* cp33-* cp34-* cp35-* cp36-* cp37-* cp38-*
+          CIBW_SKIP: pp* cp27-* cp33-* cp34-* cp35-* cp36-* cp37-*
         run: |
           python -m cibuildwheel --output-dir wheelhouse
 
