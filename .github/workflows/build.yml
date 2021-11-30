@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Install BLAS LAPCK
+      - name: Install BLAS LAPACK
         run: sudo apt-get install -y gfortran libopenblas-dev liblapack-dev
 
 
@@ -33,7 +33,7 @@ jobs:
 
       - name: Build wheels
         env:
-          CIBW_SKIP: pp* cp27-* cp33-* cp34-* cp35-* cp36-* cp37-*
+          CIBW_SKIP: pp* cp27-* cp33-* cp34-* cp35-* cp36-* cp37-* cp38-*
         run: |
           python -m cibuildwheel --output-dir wheelhouse
 
@@ -41,10 +41,10 @@ jobs:
         with:
           path: ./wheelhouse/*.whl
 
-      - name: Build and publish
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.BPOSD_PYPI_PASSWORD }}
-        run: |
-          twine upload ./wheelhouse/*
+      # - name: Build and publish
+      #   env:
+      #     TWINE_USERNAME: __token__
+      #     TWINE_PASSWORD: ${{ secrets.BPOSD_PYPI_PASSWORD }}
+      #   run: |
+      #     twine upload ./wheelhouse/*
 
