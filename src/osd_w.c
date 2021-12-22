@@ -101,6 +101,9 @@ int osd_w(
     free(cols);
     mod2sparse_free(L);
     mod2sparse_free(U);
+    free(Ht);
+    free(L);
+    free(U);
 
     return 0;
 

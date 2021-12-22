@@ -101,6 +101,24 @@ bp_osd::bp_osd(mod2sparse *H, double channel_prob, int max_iter, double osd_orde
 
 };
 
+bp_osd::~bp_osd()
+{
+    delete[] bp_decoding;
+    delete[] osd0_decoding;
+    delete[] osdw_decoding;
+    delete[] log_prob_ratios;
+    delete[] converge;
+    delete[] iter;
+    if (this->osd_method == 0 || this->osd_method == 1)
+    {
+        for(int i = 0; i < this->encoding_input_count; ++i)
+        {
+            free(osd_w_encoding_inputs[i]);
+        }
+        delete[] osd_w_encoding_inputs;
+    }
+}
+
 char *bp_osd::bp_decode(char *synd) {
 
     if(bp_method==0) bp_decode_ms(H,synd,channel_prob,max_iter,converge,iter,bp_decoding,log_prob_ratios);

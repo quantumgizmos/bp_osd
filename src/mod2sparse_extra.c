@@ -69,6 +69,8 @@ int mod2sparse_rank(mod2sparse *A){
     free(cols);
     mod2sparse_free(L);
     mod2sparse_free(U);
+    free(L);
+    free(U);
 
     rank=M-nnf;
 
@@ -398,6 +400,7 @@ int mod2sparse_decomp_osd
     }
 
     mod2sparse_free(B);
+    free(B);
     free(rinv);
     free(cinv);
     if (strategy==Mod2sparse_minprod) free(rcnt);

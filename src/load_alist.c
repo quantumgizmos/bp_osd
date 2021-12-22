@@ -92,6 +92,8 @@ mod2sparse *load_alist
   { bad_alist_file();
   }
 
+  free(rw);
+  free(cw);
   return H;
 }
 

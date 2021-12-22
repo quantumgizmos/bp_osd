@@ -1218,6 +1218,7 @@ int mod2sparse_decomp
   }
 
   mod2sparse_free(B);
+  free(B);
   free(rinv);
   free(cinv);
   if (strategy==Mod2sparse_minprod) free(rcnt);
