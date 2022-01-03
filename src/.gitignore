@@ -1,0 +1,5 @@
+*egg-info
+*.c
+*.o
+*.so
+VERSION

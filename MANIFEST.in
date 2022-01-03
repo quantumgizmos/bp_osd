@@ -1,0 +1,3 @@
+include src/bposd/README.md
+include src/bposd/LICENSE
+include src/bposd/VERSION

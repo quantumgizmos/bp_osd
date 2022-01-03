@@ -1,0 +1,12 @@
+.ipynb_checkpoints
+build
+*egg-info
+*.c
+*.o
+*.so
+__pycache__
+README.md
+LICENSE
+
+
+

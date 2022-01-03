@@ -1,7 +1,14 @@
 #directories
+.vscode
 build
 .idea
 cmake-build-debug
+dist
+zscratch
+.ipynb_checkpoints
+
+#json files
+*json
 
 #swp files
 *swp
