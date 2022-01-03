@@ -19,7 +19,7 @@ setup(
     description='BP+OSD',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://roffe.eu',
+    url='https://roffe.eu/docs/ldpc',
     author='Joschka Roffe',
     packages=["bposd"],
     package_dir={'':'src'},
