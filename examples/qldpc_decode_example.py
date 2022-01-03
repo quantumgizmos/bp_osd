@@ -13,7 +13,7 @@ osd_options={
 'bp_method': "ms",
 'ms_scaling_factor': 0,
 'osd_method': "osd_cs",
-'osd_order': 40,
+'osd_order': 42,
 'channel_update': None,
 'seed': 42,
 'max_iter': 0,
