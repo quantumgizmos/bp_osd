@@ -6,6 +6,6 @@ def get_include():
     return path
 
 with open(f"{get_include()}/VERSION","r") as f:
-    __VERSION__=f.read()
+    __version__=f.read()
 
 

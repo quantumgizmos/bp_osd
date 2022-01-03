@@ -7,7 +7,7 @@ Installtion from [PyPi](https://pypi.org/project/bposd/) requires Python>=3.6.
 To install via pip, run:
 
 ```
-pip install bposd
+pip install -U bposd
 ```
 
 ## Installation (from source)
@@ -17,13 +17,11 @@ Installation from source requires Python>=3.6 and a local C compiler (eg. 'gcc' 
 ```
 git clone https://github.com/quantumgizmos/bposd.git
 cd bposd
-pip install -e bposd
+pip install -Ue bposd
 ```
 
 ## Dependencies
-This package makes use of the `mod2sparse` data structure from Radford Neal's [Software for Low Density Parity Check Codes](https://www.cs.toronto.edu/~radford/ftp/LDPC-2012-02-11/index.html) C package.
-
-
+This package buids upon the [LDPC](https://pypi.org/project/ldpc/) python package.
 
 # Basic usage
 
@@ -159,10 +157,11 @@ from bposd import bposd_decoder
 bpd=bposd_decoder(
     surface_code.hz,#the parity check matrix
     error_rate=0.05,
+    channel_probs=[None], #assign error_rate to each qubit. This will override "error_rate" input variable
     max_iter=surface_code.N, #the maximum number of iterations for BP)
     bp_method="ms",
     ms_scaling_factor=0, #min sum scaling factor. If set to zero the variable scaling factor method is used
-    osd_method="osd_cs", #the OSD method. Choose from:  1) "osd_e", "osd_cs", "osd0" 
+    osd_method="osd_cs", #the OSD method. Choose from:  1) "osd_e", "osd_cs", "osd0"
     osd_order=7 #the osd search depth
     )
 ```
