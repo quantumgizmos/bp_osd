@@ -17,19 +17,23 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.3.1
-        env:
-          CIBW_SKIP: '*musllinux* pp*'
-
-      - uses: actions/upload-artifact@v2
-        with:
-          path: ./wheelhouse/*.whl
+      # - name: Build wheels
+      #   uses: pypa/cibuildwheel@v2.3.1
+      #   env:
+      #     CIBW_SKIP: '*musllinux* pp*'
 
       - uses: actions/setup-python@v2
         name: Install Python
         with:
-          python-version: '3.7'
+          python-version: '3.6'
+
+      - name: Build wheel
+        run: |
+          python -m pip wheel -w ./wheelhouse/ .
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
 
       - name: Install twine
         run: |
