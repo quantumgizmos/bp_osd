@@ -15,7 +15,7 @@ for f in include_files: copyfile(f,"src/bposd/"+f)
 setup(
     python_requires='>=3.6',
     name='bposd',
-    version='0.0.9',
+    version=VERSION,
     description='BP+OSD',
     long_description=long_description,
     long_description_content_type='text/markdown',
