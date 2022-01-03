@@ -33,7 +33,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          path: ./wheelhouse/*.whl
+          path: ./wheelhouse/bposd*.whl
 
       - name: Install twine
         run: |
@@ -44,5 +44,5 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.BPOSD_PYPI_PASSWORD }}
         run: |
-          twine upload ./wheelhouse/*
+          twine upload ./wheelhouse/bposd*whl
 
