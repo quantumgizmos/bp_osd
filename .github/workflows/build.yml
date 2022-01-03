@@ -26,10 +26,12 @@ jobs:
         name: Install Python
         with:
           python-version: '3.6'
+        run: |
+         python -m pip install -U pip setuptools wheel
 
       - name: Build wheel
         run: |
-          python -m pip wheel -w ./wheelhouse/ .
+         python -m pip wheel -w ./wheelhouse/ .
 
       - uses: actions/upload-artifact@v2
         with:
@@ -37,7 +39,7 @@ jobs:
 
       - name: Install twine
         run: |
-          python -m pip install twine
+          python -m pip install -U twine
       
       - name: Build and publish
         env:
