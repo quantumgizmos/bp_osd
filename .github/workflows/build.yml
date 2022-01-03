@@ -20,7 +20,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.3.0
         env:
-          CIBW_SKIP: '*_i686 *musllinux* pp* cp27-* cp33-* cp34-* cp35-*'
+          CIBW_SKIP: '*musllinux* pp*'
 
       - uses: actions/upload-artifact@v2
         with:
@@ -34,7 +34,7 @@ jobs:
       - name: Install twine
         run: |
           python -m pip install twine
-
+      
       - name: Build and publish
         env:
           TWINE_USERNAME: __token__

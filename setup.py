@@ -1,52 +1,45 @@
-from setuptools import setup, Extension
-from Cython.Build import cythonize
-import numpy
-import ldpc
+from setuptools import setup
 from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
+<<<<<<< HEAD
 VERSION="0.0.9"
 f=open("src/bposd/VERSION","w+")
 f.write(VERSION)
 f.close()
+=======
+VERSION=0.20
+with open("src/bposd/VERSION","w+") as f:
+    f.write(str(VERSION))
+
+>>>>>>> dev2
 
 from shutil import copyfile
-ldpc_path=ldpc.get_include()+'/include/'
-include_files=["mod2sparse.c","mod2sparse.h","README.md","COPYRIGHT"]
-for f in include_files: copyfile(ldpc_path+f,"src/bposd/include/"+f)
 include_files=["README.md","LICENSE"]
 for f in include_files: copyfile(f,"src/bposd/"+f)
-
-source_files=["src/bposd/bposd.pyx",
-            "src/bposd/include/binary_char.c",
-            "src/bposd/include/mod2sparse_extra.c",
-            "src/bposd/include/sort.c",
-            "src/bposd/include/mod2sparse.c"]
-
-extension = Extension(
-    name="bposd.bposd",
-    sources=source_files,
-    libraries=[],
-    library_dirs=[],
-    include_dirs=[ldpc.get_include(), numpy.get_include(),"src/bposd/include"],
-    extra_compile_args=['-std=c11']
-    )
 
 setup(
     python_requires='>=3.6',
     name='bposd',
+<<<<<<< HEAD
     version=VERSION,
+=======
+    version='0.0.9',
+>>>>>>> dev2
     description='BP+OSD',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://roffe.eu',
+    url='https://roffe.eu/docs/ldpc',
     author='Joschka Roffe',
     packages=["bposd"],
     package_dir={'':'src'},
-    ext_modules=cythonize([extension]),
     classifiers=['Development Status :: 1 - Planning'],
+<<<<<<< HEAD
     install_requires=["tqdm","scipy",f"ldpc=={ldpc.__version__}",f"numpy=={numpy.__version__}"],
+=======
+    install_requires=["ldpc"],
+>>>>>>> dev2
     include_package_data=True,
     zip_safe=False,
 )
