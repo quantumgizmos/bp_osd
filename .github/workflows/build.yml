@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - release
+      - dev
+      
+jobs:
+
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.9'
+
+  
+      # - name: Upgrade Pip
+      #   run: |
+      #     pip install --upgrade pip  
+            
+
+      - name: Install cibuildwheel and twine
+        run: |
+          python -m pip install cibuildwheel>=2.3.0 twine
+
+      - name: Build wheels
+        env:
+          CIBW_SKIP: pp* cp27-* cp33-* cp34-* cp35-* cp36-* cp37-*
+        run: |
+          python -m cibuildwheel --output-dir wheelhouse
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
+      # - name: Build and publish
+      #   env:
+      #     TWINE_USERNAME: __token__
+      #     TWINE_PASSWORD: ${{ secrets.BPOSD_PYPI_PASSWORD }}
+      #   run: |
+      #     twine upload ./wheelhouse/*
+
