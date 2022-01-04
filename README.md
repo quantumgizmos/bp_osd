@@ -1,27 +1,47 @@
 # BP+OSD: A decoder for quantum LDPC codes 
-A Python library implementing belief propagation with ordered statistics post-processing for decoding sparse quantum LDPC codes as described in [arXiv:2005.07016](https://arxiv.org/abs/2005.07016).
+A Python library implementing belief propagation with ordered statistics post-processing for decoding sparse quantum LDPC codes as described in [arXiv:2005.07016](https://arxiv.org/abs/2005.07016). Note, this library has recently been completly rewritten using Python and Cython. The bulk of the code now resides in the [LDPC](https://github.com/quantumgizmos/ldpc) repository. The original C++ version can be found in the `cpp_version` branch of this repository.
 
 ## Installation from PyPi (recommended method)
 
-Installtion from [PyPi](https://pypi.org/project/bposd/) requires Python>=3.6.
+Installation from [PyPi](https://pypi.org/project/bposd/) requires Python>=3.6.
 To install via pip, run:
 
 ```
 pip install -U bposd
 ```
 
-## Installation (from source)
+## Documentation
+This package buids upon the [LDPC](https://github.com/quantumgizmos/ldpc) python package. The documentation for LDPC can be found [here](https://roffe.eu/software/ldpc/index.html).
 
-Installation from source requires Python>=3.6 and a local C compiler (eg. 'gcc' in Linux or 'clang' in Windows). The LDPC package can then be installed by running:
+## Attribution
+If you use this software in your research, please cite the following research paper:
 
 ```
-git clone https://github.com/quantumgizmos/bposd.git
-cd bposd
-pip install -Ue bposd
+@article{roffe_decoding_2020,
+   title={Decoding across the quantum low-density parity-check code landscape},
+   volume={2},
+   ISSN={2643-1564},
+   url={http://dx.doi.org/10.1103/PhysRevResearch.2.043423},
+   DOI={10.1103/physrevresearch.2.043423},
+   number={4},
+   journal={Physical Review Research},
+   publisher={American Physical Society (APS)},
+   author={Roffe, Joschka and White, David R. and Burton, Simon and Campbell, Earl},
+   year={2020},
+   month={Dec}
+}
 ```
 
-## Dependencies
-This package buids upon the [LDPC](https://pypi.org/project/ldpc/) python package.
+Please also cite the LDPC software package:
+
+```
+@software{Roffe_LDPC_Python_tools_2022,
+author = {Roffe, Joschka},
+title = {{LDPC: Python tools for low density parity check codes}},
+url = {https://pypi.org/project/ldpc/},
+year = {2022}
+}
+```
 
 # Basic usage
 
@@ -152,7 +172,7 @@ BP+OSD decoding is useful for codes that do not perform well under standard-BP. 
 
 ```python
 import numpy as np
-from bposd import bposd_decoder
+from ldpc import bposd_decoder
 
 bpd=bposd_decoder(
     surface_code.hz,#the parity check matrix
