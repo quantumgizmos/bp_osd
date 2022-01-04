@@ -1,17 +1,17 @@
 # BP+OSD: A decoder for quantum LDPC codes 
-A Python library implementing belief propagation with ordered statistics post-processing for decoding sparse quantum LDPC codes as described in [arXiv:2005.07016](https://arxiv.org/abs/2005.07016). Note, this library has recently been completly rewritten using Python and Cython. The original C++ version can be found in the `cpp_version` branch.
+A Python library implementing belief propagation with ordered statistics post-processing for decoding sparse quantum LDPC codes as described in [arXiv:2005.07016](https://arxiv.org/abs/2005.07016). Note, this library has recently been completly rewritten using Python and Cython. The bulk of the code now resides in the [LDPC](https://github.com/quantumgizmos/ldpc) repository. The original C++ version can be found in the `cpp_version` branch of this repository.
 
 ## Installation from PyPi (recommended method)
 
-Installtion from [PyPi](https://pypi.org/project/bposd/) requires Python>=3.6.
+Installation from [PyPi](https://pypi.org/project/bposd/) requires Python>=3.6.
 To install via pip, run:
 
 ```
 pip install -U bposd
 ```
 
-## Dependencies
-This package buids upon the [LDPC](https://pypi.org/project/ldpc/) python package. The documentation for LDPC can be found [here](https://roffe.eu/software/ldpc/index.html).
+## Documentation
+This package buids upon the [LDPC](https://github.com/quantumgizmos/ldpc) python package. The documentation for LDPC can be found [here](https://roffe.eu/software/ldpc/index.html).
 
 ## Attribution
 If you use this software in your research, please cite the following research paper:

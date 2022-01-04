@@ -3,7 +3,7 @@ from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
-VERSION=0.22
+VERSION=1.0
 with open("src/bposd/VERSION","w+") as f:
     f.write(str(VERSION))
 
@@ -23,7 +23,7 @@ setup(
     author='Joschka Roffe',
     packages=["bposd"],
     package_dir={'':'src'},
-    classifiers=['Development Status :: 1 - Planning'],
+    classifiers=['Intended Audience :: Science/Research'],
     install_requires=["ldpc"],
     include_package_data=True,
     zip_safe=False,
