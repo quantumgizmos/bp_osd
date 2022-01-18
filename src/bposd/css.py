@@ -98,6 +98,11 @@ class css_code():
 
         return self.lx,self.lz
 
+    def canonical_logicals(self):
+        temp=mod2.inverse(self.lx@self.lz.T %2)
+        self.lx=temp@self.lx %2
+
+
     @property
     def code_params(self):
         try: self.N
