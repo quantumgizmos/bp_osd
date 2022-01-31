@@ -2,6 +2,7 @@ import numpy as np
 from ldpc import mod2
 from ldpc.alist import save_alist
 from ldpc.code_util import compute_code_distance
+from bposd import stab
 
 class css_code():
 
@@ -75,6 +76,29 @@ class css_code():
         save_alist(f"{code_name}_lx.alist",lx)
         save_alist(f"{code_name}_lz.alist",lz)
 
+    def to_stab_code(self):
+
+        hx=np.vstack([np.zeros(self.hz.shape,dtype=int),self.hx])
+        hz=np.vstack([self.hz,np.zeros(self.hx.shape,dtype=int)])
+        return stab.stab_code(hx,hz)
+
+    @property
+    def h(self):
+        hx=np.vstack([np.zeros(self.hz.shape,dtype=int),self.hx])
+        hz=np.vstack([self.hz,np.zeros(self.hx.shape,dtype=int)])
+        return np.hstack([hx,hz])
+
+    @property
+    def l(self):
+        lx=np.vstack([np.zeros(self.lz.shape,dtype=int),self.lx])
+        lz=np.vstack([self.lz,np.zeros(self.lx.shape,dtype=int)])
+        return np.hstack([lx,lz])
+
+
+    def compute_code_distance(self):
+        temp=self.to_stab_code()
+        self.D=temp.compute_code_distance()
+        return self.D
 
     def compute_logicals(self):
 
