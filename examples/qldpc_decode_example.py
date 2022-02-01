@@ -1,6 +1,6 @@
 import numpy as np
 from bposd.hgp import hgp
-from css_decode_sim import css_decode_sim
+from bposd.css_decode_sim import css_decode_sim
 
 h=np.loadtxt("examples/mkmn_16_4_6.txt").astype(int)
 qcode=hgp(h) # construct quantum LDPC code using the symmetric hypergraph product
