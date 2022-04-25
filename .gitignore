@@ -5,6 +5,7 @@ build
 cmake-build-debug
 dist
 zscratch
+zscratch.py
 .ipynb_checkpoints
 
 #json files
