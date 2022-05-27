@@ -2,7 +2,7 @@ import numpy as np
 from bposd.hgp import hgp
 from css_decode_sim import css_decode_sim
 
-h=np.loadtxt("examples/mkmn_16_4_6.txt").astype(int)
+h=np.loadtxt("examples/mkmn_16_4_6.txt").astype(np.uint8)
 qcode=hgp(h) # construct quantum LDPC code using the symmetric hypergraph product
 
 osd_options={
@@ -20,5 +20,5 @@ osd_options={
 'output_file': "test.json"
 }
 
-lk = css_decode_sim(hx=qcode.hx, hz=qcode.hz, **osd_options)
+lk = css_decode_sim(hx=qcode.hx.astype(np.uint8), hz=qcode.hz.astype(np.uint8), **osd_options)
 

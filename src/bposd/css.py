@@ -55,12 +55,12 @@ class css_code():
         #column weights
         hx_l=np.max(np.sum(self.hx,axis=0))
         hz_l=np.max(np.sum(self.hz,axis=0))
-        self.L=np.max([hx_l,hz_l]).astype(int)
+        self.L=np.max([hx_l,hz_l]).astype(np.uint8)
 
         #row weights
         hx_q=np.max(np.sum(self.hx,axis=1))
         hz_q=np.max(np.sum(self.hz,axis=1))
-        self.Q=np.max([hx_q,hz_q]).astype(int)
+        self.Q=np.max([hx_q,hz_q]).astype(np.uint8)
 
     def save_sparse(self, code_name):
 
@@ -78,20 +78,20 @@ class css_code():
 
     def to_stab_code(self):
 
-        hx=np.vstack([np.zeros(self.hz.shape,dtype=int),self.hx])
-        hz=np.vstack([self.hz,np.zeros(self.hx.shape,dtype=int)])
+        hx=np.vstack([np.zeros(self.hz.shape,dtype=np.uint8),self.hx])
+        hz=np.vstack([self.hz,np.zeros(self.hx.shape,dtype=np.uint8)])
         return stab.stab_code(hx,hz)
 
     @property
     def h(self):
-        hx=np.vstack([np.zeros(self.hz.shape,dtype=int),self.hx])
-        hz=np.vstack([self.hz,np.zeros(self.hx.shape,dtype=int)])
+        hx=np.vstack([np.zeros(self.hz.shape,dtype=np.uint8),self.hx])
+        hz=np.vstack([self.hz,np.zeros(self.hx.shape,dtype=np.uint8)])
         return np.hstack([hx,hz])
 
     @property
     def l(self):
-        lx=np.vstack([np.zeros(self.lz.shape,dtype=int),self.lx])
-        lz=np.vstack([self.lz,np.zeros(self.lx.shape,dtype=int)])
+        lx=np.vstack([np.zeros(self.lz.shape,dtype=np.uint8),self.lx])
+        lz=np.vstack([self.lz,np.zeros(self.lx.shape,dtype=np.uint8)])
         return np.hstack([lx,lz])
 
 

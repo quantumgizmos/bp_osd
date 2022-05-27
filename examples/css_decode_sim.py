@@ -124,13 +124,13 @@ class css_decode_sim():
         print(f"RNG Seed: {self.seed}")
         
         # the hx and hx matrices
-        self.hx = hx
-        self.hz = hz
+        self.hx = hx.astype(np.uint8)
+        self.hz = hz.astype(np.uint8)
         self.N = self.hz.shape[1] #the block length
         if self.min_logical_weight == 1e9: #the minimum observed weight of a logical operator
             self.min_logical_weight=self.N 
-        self.error_x = np.zeros(self.N).astype(int) #x_component error vector
-        self.error_z = np.zeros(self.N).astype(int) #z_component error vector
+        self.error_x = np.zeros(self.N).astype(np.uint8) #x_component error vector
+        self.error_z = np.zeros(self.N).astype(np.uint8) #z_component error vector
 
         # construct the CSS code from hx and hz
         self._construct_code()
@@ -338,8 +338,8 @@ class css_decode_sim():
         print("Constructing CSS code from hx and hz matrices...")
         if isinstance(self.hx, np.ndarray) and isinstance(self.hz, np.ndarray):
             qcode = css_code(self.hx, self.hz)
-            self.lx = qcode.lx
-            self.lz = qcode.lz
+            self.lx = qcode.lx.astype(np.uint8)
+            self.lz = qcode.lz.astype(np.uint8)
             self.K = qcode.K
             self.N = qcode.N
             print("Checking the CSS code is valid...")

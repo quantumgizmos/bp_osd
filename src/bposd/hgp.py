@@ -17,15 +17,15 @@ class hgp(css_code):
 
         #setting up base codes
         self.m1,self.n1=np.shape(h1)
-        i_m1=np.identity(self.m1,dtype=int)
-        i_n1=np.identity(self.n1,dtype=int)
+        i_m1=np.identity(self.m1,dtype=np.uint8)
+        i_n1=np.identity(self.n1,dtype=np.uint8)
         self.r1=rank(self.h1)
         self.k1=self.n1-self.r1
         self.k1t=self.m1-self.r1
 
         self.m2,self.n2=np.shape(h2)
-        i_m2=np.identity(self.m2,dtype=int)
-        i_n2=np.identity(self.n2,dtype=int)
+        i_m2=np.identity(self.m2,dtype=np.uint8)
+        i_n2=np.identity(self.n2,dtype=np.uint8)
         self.r2=rank(self.h2)
         self.k2=self.n2-self.r2
         self.k2t=self.m2-self.r2
@@ -53,7 +53,7 @@ class hgp(css_code):
             self.d1t=compute_code_distance(self.h1.T)
             self.d2=compute_code_distance(self.h2)
             self.d2t=compute_code_distance(self.h2.T)
-            self.D=np.min([self.d1,self.d1t,self.d2,self.d2t]).astype(int)
+            self.D=np.min([self.d1,self.d1t,self.d2,self.d2t]).astype(np.uint8)
         else: self.D=None
 
     def print_code_parameters(self):
