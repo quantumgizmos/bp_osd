@@ -51,7 +51,12 @@ class css_decode_sim():
         cluster, it is recommend to disable tqdm.
     run_sim: bool
         If enabled (default), the simulation will start automatically.
-     
+    hadamard_rotate: bool
+        Toggle Hadamard rotate. ON: 1; OFF; 0
+    hadamard_rotate_sector1_length: int
+        Specifies the number of qubits in sector 1 for the Hadamard rotation.
+    error_bar_precision_cutoff: float
+        The simulation will stop after this precision is reached.
     '''
 
     def __init__(self, hx=None, hz=None, **input_dict):
@@ -72,7 +77,10 @@ class css_decode_sim():
             'check_code': 1,
             'tqdm_disable': 0,
             'run_sim': 1,
-            'channel_update': "x->z"
+            'channel_update': "x->z",
+            'hadamard_rotate': 0,
+            'hadamard_rotate_sector1_length': 0,
+            'error_bar_precision_cutoff': 1e-3
         }
 
         #apply defaults for keys not passed to the class
@@ -113,7 +121,7 @@ class css_decode_sim():
         #the attributes we wish to save to file
         temp = [] 
         for key in self.__dict__.keys():
-            if key not in ['channel_probs_x','channel_probs_z','channel_probs_y']:
+            if key not in ['channel_probs_x','channel_probs_z','channel_probs_y','hx','hz']:
                 temp.append(key)
         self.output_keys = temp
 
@@ -373,16 +381,23 @@ class css_decode_sim():
             self.px, self.py, self.pz = self.error_rate * \
                 xyz_error_bias/np.sum(xyz_error_bias)
 
-        self.channel_probs_x = np.ones(self.N)*(self.px)
-        self.channel_probs_z = np.ones(self.N)*(self.pz)
-        self.channel_probs_y = np.ones(self.N)*(self.py)
+        if self.hadamard_rotate==0:
+            self.channel_probs_x = np.ones(self.N)*(self.px)
+            self.channel_probs_z = np.ones(self.N)*(self.pz)
+            self.channel_probs_y = np.ones(self.N)*(self.py)
+        
+        elif self.hadamard_rotate==1:
+            n1=self.hadamard_rotate_sector1_length
+            self.channel_probs_x =np.hstack([np.ones(n1)*(self.px),np.ones(self.N-n1)*(self.pz)])
+            self.channel_probs_z =np.hstack([np.ones(n1)*(self.pz),np.ones(self.N-n1)*(self.px)])
+            self.channel_probs_y = np.ones(self.N)*(self.py)
+        else:
+            raise ValueError(f"The hadamard rotate attribute should be set to 0 or 1. Not '{self.hadamard_rotate}")
 
         self.channel_probs_x.setflags(write=False)
         self.channel_probs_y.setflags(write=False)
         self.channel_probs_z.setflags(write=False)
 
-
-        # self.xyz_error_bias = xyz_error_bias
 
     def _decoder_setup(self):
 
@@ -473,9 +488,9 @@ class css_decode_sim():
                     print(self.output_dict(),file=f)
                     f.close()
 
-                # if osdw_logical_error_rate_eb>0 and osdw_logical_error_rate_eb/osdw_logical_error_rate < error_bar_precision_cutoff:
-                #     print("\nTarget error bar precision reached. Stopping simulation...")
-                #     break
+                if self.osdw_logical_error_rate_eb>0 and self.osdw_logical_error_rate_eb/self.osdw_logical_error_rate < self.error_bar_precision_cutoff:
+                    print("\nTarget error bar precision reached. Stopping simulation...")
+                    break
 
         return json.dumps(self.output_dict(),sort_keys=True, indent=4)
 

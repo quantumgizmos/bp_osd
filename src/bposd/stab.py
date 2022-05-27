@@ -19,8 +19,11 @@ def gf2_to_gf4(bin):
 
 class stab_code():
 
-    def __init__(self,hx=None,hz=None):
-  
+    def __init__(self,hx=None,hz=None,name=None):
+        if name is None:
+            self.name = "<Unamed stabiliser code>"
+        else: self.name=name
+
         if hz is None or hz is None:
             self.hx=np.array([[]])
             self.hz = np.array([[]])
@@ -98,19 +101,55 @@ class stab_code():
 
         return d_min
 
-    def test(self):
-        #check the logical operators are in the kernel of the pcm        
-        assert ((self.hx@self.lz.T %2 + self.hz@self.lx.T %2)%2).any()==0
-        assert mod2.rank((self.lx@self.lz.T%2 + self.lz@self.lx.T%2) %2)==self.l.shape[0]
 
-        self.compute_logical_operators()
+    def test(self, show_tests=True):
+        valid_code=True
 
-        #check commutativity relation (non CSS code)
-        assert (( (self.hz@self.hx.T %2) + (self.hx@self.hz.T %2) ) %2 ).any() == 0
-    
-        # #check the logical operators valid
-        assert ((self.hx@self.lz.T %2 + self.hz@self.lx.T %2)%2).any()==0
-        assert mod2.rank((self.lx@self.lz.T%2 + self.lz@self.lx.T%2) %2)==self.l.shape[0]
+        # if self.K==np.nan: self.compute_dimension()
+
+        code_label=f"{self.code_params}"
+
+        if show_tests: print(f"{self.name}, {code_label}")
+
+        try:
+            assert self.N==self.hz.shape[1]==self.lz.shape[1]==self.lx.shape[1]
+            assert self.K==self.lz.shape[0]//2==self.lx.shape[0]//2
+            if show_tests: print(" -Block dimensions: Pass")
+        except AssertionError:
+            valid_code=False
+            print(" -Block dimensions incorrect")
+
+        try:
+            assert (( (self.hz@self.hx.T %2) + (self.hx@self.hz.T %2) ) %2 ).any() == 0
+            if show_tests: print(" -PCMs commute hz@hx.T==0: Pass")
+        except AssertionError:
+            valid_code=False
+            print(" -PCMs commute hz@hx.T==0: Fail")
+
+        # if show_tests and valid_code: print("\t-PCMs commute hx@hz.T == hz@hx.T ==0: Pass")
+
+        try:
+            assert ((self.hx@self.lz.T %2 + self.hz@self.lx.T %2)%2).any()==0
+        except AssertionError:
+            valid_code=False
+            print(" -lx \in ker{hz} AND lz \in ker{hx}: Fail")
+
+
+        # if show_tests and valid_code: print("\t-lx \in ker{hz} AND lz \in ker{hx}: Pass")
+
+        try:
+            assert mod2.rank((self.lx@self.lz.T%2 + self.lz@self.lx.T%2) %2)==self.l.shape[0]
+            if show_tests: print(" -lx and lz anticommute: Pass")
+        except AssertionError:
+            valid_code=False
+            print(" -lx and lz anitcommute: Fail")
+
+        # if show_tests and valid_code: print("\t- lx and lz anitcommute: Pass")
+
+        if show_tests and valid_code:
+            print(f"{self.name} is a valid stabiliser code w/ params {code_label}")
+
+        return valid_code
 
     @property
     def code_params(self):
