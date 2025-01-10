@@ -1,52 +1,47 @@
-name: Build
+name: Publish to PyPI
 
 on:
   push:
     branches:
-      - release
+      - main
+  workflow_dispatch:
 
 jobs:
-
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest]
+  publish:
+    name: Build and Publish bp_osd
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      # Check out the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # - name: Build wheels
-      #   uses: pypa/cibuildwheel@v2.3.1
-      #   env:
-      #     CIBW_SKIP: '*musllinux* pp*'
-
-      - uses: actions/setup-python@v2
-        name: Install Python
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.9'  # Minimum Python version required
 
-      - name: Update build tools
+      # Install build dependencies
+      - name: Install build tools
         run: |
-         python -m pip install -U pip setuptools wheel
+          python -m pip install --upgrade pip
+          python -m pip install build
 
-      - name: Build wheel
+      # Build the package
+      - name: Build package
         run: |
-         python -m pip wheel -w ./wheelhouse/ .
+          python -m build --wheel --outdir ./wheelhouse
 
-      - uses: actions/upload-artifact@v2
-        with:
-          path: ./wheelhouse/bposd*.whl
-
+      # Install twine
       - name: Install twine
         run: |
-          python -m pip install -U twine
-      
-      - name: Build and publish
+          python -m pip install --upgrade twine
+
+      # Publish to PyPI
+      - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.BPOSD_PYPI_PASSWORD }}
         run: |
           twine upload ./wheelhouse/bposd*whl
-

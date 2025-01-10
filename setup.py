@@ -27,7 +27,7 @@ setup(
     packages=["bposd"],
     package_dir={"": "src"},
     classifiers=["Intended Audience :: Science/Research"],
-    install_requires=["ldpc"],
+    install_requires=["ldpc>=2.0.0", "numpy", "scipy"],
     include_package_data=True,
     zip_safe=False,
 )
