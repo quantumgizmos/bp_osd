@@ -15,3 +15,13 @@ def test_css_code_steane():
     assert qcode.D == 3
 
     assert qcode.test()
+
+    h = ldpc.codes.hamming_code(3).toarray()
+
+    qcode = css_code(hx=h, hz=h, code_distance=3, name="Steane code")
+
+    assert qcode.N == 7
+    assert qcode.K == 1
+    assert qcode.D == 3
+
+    assert qcode.test()

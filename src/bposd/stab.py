@@ -20,29 +20,19 @@ def gf2_to_gf4(bin):
 
 
 class stab_code:
-    def __init__(self, hx=None, hz=None, name=None):
+    def __init__(self, hx, hz, name=None):
         if not scipy.sparse.issparse(hx) and not scipy.sparse.issparse(hz):
-            hx = scipy.sparse.csr_matrix(hx)
-            hz = scipy.sparse.csr_matrix(hz)
+            hx = scipy.sparse.csr_matrix(hx).astype(np.uint8)
+            hz = scipy.sparse.csr_matrix(hz).astype(np.uint8)
 
         if name is None:
             self.name = "<Unamed stabiliser code>"
         else:
             self.name = name
 
-        if hz is None or hz is None:
-            self.hx = np.array([[]])
-            self.hz = np.array([[]])
-            self.N = np.nan
-            self.K = np.nan
-            self.lx = np.array([[]])
-            self.lz = np.array([[]])
-            self.D = np.nan
-
-        else:
-            self.hx = hx
-            self.hz = hz
-            self.init_code()
+        self.hx = hx.astype(np.uint8)
+        self.hz = hz.astype(np.uint8)
+        self.init_code()
 
         self.h = scipy.sparse.hstack([self.hx, self.hz])
         self.l = scipy.sparse.hstack([self.lx, self.lz])

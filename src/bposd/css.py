@@ -13,14 +13,14 @@ class css_code:
         name="<Unnamed CSS code>",
     ):
         if not scipy.sparse.issparse(hx) and not scipy.sparse.issparse(hz):
-            hx = scipy.sparse.csr_matrix(hx)
-            hz = scipy.sparse.csr_matrix(hz)
+            hx = scipy.sparse.csr_matrix(hx).astype(np.uint8)
+            hz = scipy.sparse.csr_matrix(hz).astype(np.uint8)
 
-        self.hx = hx  # hx pcm
-        self.hz = hz  # hz pcm
+        self.hx = hx.astype(np.uint8)  # hx pcm
+        self.hz = hz.astype(np.uint8)  # hz pcm
 
-        self.lx = scipy.sparse.csr_matrix([])  # x logicals
-        self.lz = scipy.sparse.csr_matrix([])  # z logicals
+        self.lx = scipy.sparse.csr_matrix([]).astype(np.uint8)  # x logicals
+        self.lz = scipy.sparse.csr_matrix([]).astype(np.uint8)  # z logicals
 
         self.N = np.nan  # block length
         self.K = np.nan  # code dimension
@@ -51,20 +51,20 @@ class css_code:
         return self.K
 
     def to_stab_code(self):
-        hx = scipy.sparse.vstack([np.zeros(self.hz.shape, dtype=int), self.hx])
-        hz = scipy.sparse.vstack([self.hz, np.zeros(self.hx.shape, dtype=int)])
+        hx = scipy.sparse.vstack([np.zeros(self.hz.shape, dtype=np.uint8), self.hx])
+        hz = scipy.sparse.vstack([self.hz, np.zeros(self.hx.shape, dtype=np.uint8)])
         return stab.stab_code(hx, hz)
 
     @property
     def h(self):
-        hx = scipy.sparse.vstack([np.zeros(self.hz.shape, dtype=int), self.hx])
-        hz = scipy.sparse.vstack([self.hz, np.zeros(self.hx.shape, dtype=int)])
+        hx = scipy.sparse.vstack([np.zeros(self.hz.shape, dtype=np.uint8), self.hx])
+        hz = scipy.sparse.vstack([self.hz, np.zeros(self.hx.shape, dtype=np.uint8)])
         return scipy.sparse.hstack([hx, hz])
 
     @property
     def l(self):
-        lx = scipy.sparse.vstack([np.zeros(self.lz.shape, dtype=int), self.lx])
-        lz = scipy.sparse.vstack([self.lz, np.zeros(self.lx.shape, dtype=int)])
+        lx = scipy.sparse.vstack([np.zeros(self.lz.shape, dtype=np.uint8), self.lx])
+        lz = scipy.sparse.vstack([self.lz, np.zeros(self.lx.shape, dtype=np.uint8)])
         return scipy.sparse.hstack([lx, lz])
 
     def compute_code_distance(self):
