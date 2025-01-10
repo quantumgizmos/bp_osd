@@ -3,8 +3,9 @@ from tqdm import tqdm
 import json
 import time
 import datetime
-from bposd import bposd_decoder
+from ldpc import BpOsdDecoder
 from bposd.css import css_code
+import scipy
 
 
 class css_decode_sim:
@@ -137,15 +138,15 @@ class css_decode_sim:
         print(f"RNG Seed: {self.seed}")
 
         # the hx and hx matrices
-        self.hx = hx.astype(int)
-        self.hz = hz.astype(int)
+        self.hx = scipy.sparse.csr_matrix(hx).astype(np.uint8)
+        self.hz = scipy.sparse.csr_matrix(hz).astype(np.uint8)
         self.N = self.hz.shape[1]  # the block length
         if (
             self.min_logical_weight == 1e9
         ):  # the minimum observed weight of a logical operator
             self.min_logical_weight = self.N
-        self.error_x = np.zeros(self.N).astype(int)  # x_component error vector
-        self.error_z = np.zeros(self.N).astype(int)  # z_component error vector
+        self.error_x = np.zeros(self.N).astype(np.uint8)  # x_component error vector
+        self.error_z = np.zeros(self.N).astype(np.uint8)  # z_component error vector
 
         # construct the CSS code from hx and hz
         self._construct_code()
@@ -369,7 +370,9 @@ class css_decode_sim:
         """
 
         print("Constructing CSS code from hx and hz matrices...")
-        if isinstance(self.hx, np.ndarray) and isinstance(self.hz, np.ndarray):
+        if isinstance(self.hx, (np.ndarray, scipy.sparse.spmatrix)) and isinstance(
+            self.hz, (np.ndarray, scipy.sparse.spmatrix)
+        ):
             qcode = css_code(self.hx, self.hz)
             self.lx = qcode.lx
             self.lz = qcode.lz
@@ -435,8 +438,10 @@ class css_decode_sim:
         Setup for the BP+OSD decoders
         """
 
+        self.ms_scaling_factor = float(self.ms_scaling_factor)
+
         # decoder for Z errors
-        self.bpd_z = bposd_decoder(
+        self.bpd_z = BpOsdDecoder(
             self.hx,
             channel_probs=self.channel_probs_z + self.channel_probs_y,
             max_iter=self.max_iter,
@@ -447,7 +452,7 @@ class css_decode_sim:
         )
 
         # decoder for X-errors
-        self.bpd_x = bposd_decoder(
+        self.bpd_x = BpOsdDecoder(
             self.hz,
             channel_probs=self.channel_probs_x + self.channel_probs_y,
             max_iter=self.max_iter,
@@ -532,7 +537,7 @@ class css_decode_sim:
                     "%H:%M:%S", time.gmtime(self.runtime)
                 )
 
-                if self.output_file != None:
+                if self.output_file is not None:
                     f = open(self.output_file, "w+")
                     print(self.output_dict(), file=f)
                     f.close()

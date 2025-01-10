@@ -12,7 +12,7 @@ osd_options = {
     "output_file": "test.json",
     "bp_method": "ms",
     "ms_scaling_factor": 0,
-    "osd_method": "osd_cs2",
+    "osd_method": "osd_cs",
     "osd_order": 42,
     "channel_update": None,
     "seed": 42,

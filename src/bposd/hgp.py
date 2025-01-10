@@ -14,7 +14,7 @@ class hgp(css_code):
             h1 = scipy.sparse.csr_matrix(h1)
 
         if h2 is None:
-            h2 = scipy.sparse.copy(h1)
+            h2 = h1.copy()
 
         if not scipy.sparse.issparse(h2):
             h2 = scipy.sparse.csr_matrix(h2)
