@@ -7,6 +7,7 @@ dist
 zscratch
 zscratch.py
 .ipynb_checkpoints
+__pycache__
 
 #json files
 *json
