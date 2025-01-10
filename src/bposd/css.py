@@ -1,8 +1,7 @@
 import numpy as np
 from ldpc import mod2
-from ldpc.alist import save_alist
-from ldpc.code_util import compute_code_distance
 from bposd import stab
+import scipy
 
 
 class css_code:
@@ -13,11 +12,15 @@ class css_code:
         code_distance=np.nan,
         name="<Unnamed CSS code>",
     ):
+        if not scipy.sparse.issparse(hx) and not scipy.sparse.issparse(hz):
+            hx = scipy.sparse.csr_matrix(hx)
+            hz = scipy.sparse.csr_matrix(hz)
+
         self.hx = hx  # hx pcm
         self.hz = hz  # hz pcm
 
-        self.lx = np.array([[]])  # x logicals
-        self.lz = np.array([[]])  # z logicals
+        self.lx = scipy.sparse.csr_matrix([])  # x logicals
+        self.lz = scipy.sparse.csr_matrix([])  # z logicals
 
         self.N = np.nan  # block length
         self.K = np.nan  # code dimension
@@ -36,12 +39,7 @@ class css_code:
 
         if nx != 0:
             self.compute_dimension()
-            self.compute_ldpc_params()
             self.compute_logicals()
-            if code_distance == 0:
-                dx = compute_code_distance(hx)
-                dz = compute_code_distance(hz)
-                self.D = np.min([dx, dz])
 
         self.name = name
 
@@ -52,46 +50,22 @@ class css_code:
         self.K = self.N - mod2.rank(self.hx) - mod2.rank(self.hz)
         return self.K
 
-    def compute_ldpc_params(self):
-        # column weights
-        hx_l = np.max(np.sum(self.hx, axis=0))
-        hz_l = np.max(np.sum(self.hz, axis=0))
-        self.L = np.max([hx_l, hz_l]).astype(int)
-
-        # row weights
-        hx_q = np.max(np.sum(self.hx, axis=1))
-        hz_q = np.max(np.sum(self.hz, axis=1))
-        self.Q = np.max([hx_q, hz_q]).astype(int)
-
-    def save_sparse(self, code_name):
-        self.code_name = code_name
-
-        hx = self.hx
-        hz = self.hz
-        save_alist(f"{code_name}_hx.alist", hx)
-        save_alist(f"{code_name}_hz.alist", hz)
-
-        lx = self.lx
-        lz = self.lz
-        save_alist(f"{code_name}_lx.alist", lx)
-        save_alist(f"{code_name}_lz.alist", lz)
-
     def to_stab_code(self):
-        hx = np.vstack([np.zeros(self.hz.shape, dtype=int), self.hx])
-        hz = np.vstack([self.hz, np.zeros(self.hx.shape, dtype=int)])
+        hx = scipy.sparse.vstack([np.zeros(self.hz.shape, dtype=int), self.hx])
+        hz = scipy.sparse.vstack([self.hz, np.zeros(self.hx.shape, dtype=int)])
         return stab.stab_code(hx, hz)
 
     @property
     def h(self):
-        hx = np.vstack([np.zeros(self.hz.shape, dtype=int), self.hx])
-        hz = np.vstack([self.hz, np.zeros(self.hx.shape, dtype=int)])
-        return np.hstack([hx, hz])
+        hx = scipy.sparse.vstack([np.zeros(self.hz.shape, dtype=int), self.hx])
+        hz = scipy.sparse.vstack([self.hz, np.zeros(self.hx.shape, dtype=int)])
+        return scipy.sparse.hstack([hx, hz])
 
     @property
     def l(self):
-        lx = np.vstack([np.zeros(self.lz.shape, dtype=int), self.lx])
-        lz = np.vstack([self.lz, np.zeros(self.lx.shape, dtype=int)])
-        return np.hstack([lx, lz])
+        lx = scipy.sparse.vstack([np.zeros(self.lz.shape, dtype=int), self.lx])
+        lz = scipy.sparse.vstack([self.lz, np.zeros(self.lx.shape, dtype=int)])
+        return scipy.sparse.hstack([lx, lz])
 
     def compute_code_distance(self):
         temp = self.to_stab_code()
@@ -104,15 +78,13 @@ class css_code:
             # lz\in ker{hx} AND \notin Im(Hz.T)
 
             ker_hx = mod2.nullspace(hx)  # compute the kernel basis of hx
-            im_hzT = mod2.row_basis(hz)  # compute the image basis of hz.T
-
             # in the below we row reduce to find vectors in kx that are not in the image of hz.T.
-            log_stack = np.vstack([im_hzT, ker_hx])
-            pivots = mod2.row_echelon(log_stack.T)[3]
-            log_op_indices = [
-                i for i in range(im_hzT.shape[0], log_stack.shape[0]) if i in pivots
-            ]
-            log_ops = log_stack[log_op_indices]
+            log_stack = scipy.sparse.vstack([hz, ker_hx])
+
+            rank_hz = mod2.rank(hz)
+
+            pivots = mod2.pivot_rows(log_stack)[rank_hz:]
+            log_ops = log_stack[pivots]
             return log_ops
 
         if self.K == np.nan:
@@ -121,10 +93,6 @@ class css_code:
         self.lz = compute_lz(self.hx, self.hz)
 
         return self.lx, self.lz
-
-    def canonical_logicals(self):
-        temp = mod2.inverse(self.lx @ self.lz.T % 2)
-        self.lx = temp @ self.lx % 2
 
     @property
     def code_params(self):
@@ -156,12 +124,9 @@ class css_code:
 
         if self.K == np.nan:
             self.compute_dimension()
-        self.compute_ldpc_params()
-
-        code_label = f"{self.code_params}"
 
         if show_tests:
-            print(f"{self.name}, {code_label}")
+            print(f"{self.name}")
 
         try:
             assert self.N == self.hz.shape[1] == self.lz.shape[1] == self.lx.shape[1]
@@ -173,7 +138,7 @@ class css_code:
             print(" -Block dimensions incorrect")
 
         try:
-            assert not (self.hz @ self.hx.T % 2).any()
+            assert not np.any((self.hz @ self.hx.T).data % 2)
             if show_tests:
                 print(" -PCMs commute hz@hx.T==0: Pass")
         except AssertionError:
@@ -181,7 +146,7 @@ class css_code:
             print(" -PCMs commute hz@hx.T==0: Fail")
 
         try:
-            assert not (self.hx @ self.hz.T % 2).any()
+            assert not np.any((self.hx @ self.hz.T).data % 2)
             if show_tests:
                 print(" -PCMs commute hx@hz.T==0: Pass")
         except AssertionError:
@@ -191,13 +156,13 @@ class css_code:
         # if show_tests and valid_code: print("\t-PCMs commute hx@hz.T == hz@hx.T ==0: Pass")
 
         try:
-            assert not (self.hz @ self.lx.T % 2).any()
+            assert not np.any((self.hz @ self.lx.T).data % 2)
         except AssertionError:
             valid_code = False
             print(" -lx \in ker{hz} AND lz \in ker{hx}: Fail")
 
         try:
-            assert not (self.hx @ self.lz.T % 2).any()
+            assert not np.any((self.hx @ self.lz.T).data % 2)
             if show_tests:
                 print(" -lx \in ker{hz} AND lz \in ker{hx}: Pass")
         except AssertionError:
@@ -207,16 +172,20 @@ class css_code:
         # if show_tests and valid_code: print("\t-lx \in ker{hz} AND lz \in ker{hx}: Pass")
 
         try:
-            assert mod2.rank(self.lx @ self.lz.T % 2) == self.K
+            lx_lz = self.lx @ self.lz.T
+            lx_lz.data = lx_lz.data % 2
+            assert mod2.rank(lx_lz) == self.K
             if show_tests:
                 print(" -lx and lz anticommute: Pass")
         except AssertionError:
             valid_code = False
-            print(" -lx and lz anitcommute: Fail")
+            print(" -lx and lz anticommute: Fail")
 
         # if show_tests and valid_code: print("\t- lx and lz anitcommute: Pass")
 
         if show_tests and valid_code:
-            print(f" -{self.name} is a valid CSS code w/ params {code_label}")
+            print(
+                f" -{self.name} is a valid CSS code w/ params [{self.N},{self.K},{self.D}]"
+            )
 
         return valid_code
