@@ -5,7 +5,6 @@ from bposd.css import css_code
 import scipy
 
 
-
 class hgp(css_code):
     def __init__(self, h1, h2=None, compute_distance=False):
         super().__init__()
