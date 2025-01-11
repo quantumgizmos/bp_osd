@@ -4,7 +4,7 @@ from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
-VERSION = 2.0
+VERSION = 2.1
 with open("src/bposd/VERSION", "w+") as f:
     f.write(str(VERSION))
 
