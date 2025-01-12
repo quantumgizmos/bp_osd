@@ -1,6 +1,3 @@
-import scipy
-import numpy as np
-import pytest
 from bposd.css import css_code
 import ldpc.codes
 

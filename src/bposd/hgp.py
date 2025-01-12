@@ -57,7 +57,7 @@ class hgp(css_code):
         self.compute_logicals()
 
         ##compute code distance if the base codes are small enough for it to be tractable
-        if compute_distance == True:
+        if compute_distance is True:
             if self.h1.shape[1] != rank(self.h1):
                 self.d1 = compute_exact_code_distance(self.h1)
             else:
@@ -83,7 +83,7 @@ class hgp(css_code):
             self.D = None
 
         def print_code_parameters(self):
-            if self.D == None:
+            if self.D is None:
                 print(f"[[{self.N},{self.K},d]]")
             else:
                 print(f"[[{self.N},{self.K},{self.D}]]")

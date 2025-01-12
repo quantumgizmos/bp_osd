@@ -75,7 +75,7 @@ class css_code:
     def compute_logicals(self):
         def compute_lz(hx, hz):
             # lz logical operators
-            # lz\in ker{hx} AND \notin Im(Hz.T)
+            # lz\\in ker{hx} AND \notin Im(Hz.T)
 
             ker_hx = mod2.nullspace(hx)  # compute the kernel basis of hx
             # in the below we row reduce to find vectors in kx that are not in the image of hz.T.
@@ -159,17 +159,17 @@ class css_code:
             assert not np.any((self.hz @ self.lx.T).data % 2)
         except AssertionError:
             valid_code = False
-            print(" -lx \in ker{hz} AND lz \in ker{hx}: Fail")
+            print(" -lx \\in ker{hz} AND lz \\in ker{hx}: Fail")
 
         try:
             assert not np.any((self.hx @ self.lz.T).data % 2)
             if show_tests:
-                print(" -lx \in ker{hz} AND lz \in ker{hx}: Pass")
+                print(" -lx \\in ker{hz} AND lz \\in ker{hx}: Pass")
         except AssertionError:
             valid_code = False
-            print(" -lx \in ker{hz} AND lz \in ker{hx}: Fail")
+            print(" -lx \\in ker{hz} AND lz \\in ker{hx}: Fail")
 
-        # if show_tests and valid_code: print("\t-lx \in ker{hz} AND lz \in ker{hx}: Pass")
+        # if show_tests and valid_code: print("\t-lx \\in ker{hz} AND lz \\in ker{hx}: Pass")
 
         try:
             lx_lz = self.lx @ self.lz.T

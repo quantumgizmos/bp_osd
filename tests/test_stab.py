@@ -1,4 +1,3 @@
-import pytest
 import numpy as np
 from bposd.stab import stab_code
 

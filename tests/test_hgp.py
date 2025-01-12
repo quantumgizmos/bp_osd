@@ -1,6 +1,4 @@
 import numpy as np
-import scipy
-import pytest
 import ldpc
 
 from bposd.hgp import hgp
@@ -36,4 +34,4 @@ def test_hgp_with_seed_code1():
         ]
     )
 
-    qcode = hgp(HL, HL, compute_distance=True)
+    hgp(HL, HL, compute_distance=True)

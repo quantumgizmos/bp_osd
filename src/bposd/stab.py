@@ -134,10 +134,10 @@ class stab_code:
             assert ((self.hx @ self.lz.T + self.hz @ self.lx.T).data % 2).any() == 0
         except AssertionError:
             valid_code = False
-            print(" -lx \in ker{hz} AND lz \in ker{hx}: Fail")
+            print(" -lx \\in ker{hz} AND lz \\in ker{hx}: Fail")
 
         if show_tests and valid_code:
-            print("\t-lx \in ker{hz} AND lz \in ker{hx}: Pass")
+            print("\t-lx \\in ker{hz} AND lz \\in ker{hx}: Pass")
 
         try:
             lx_lz = self.lx @ self.lz.T + self.lz @ self.lx.T

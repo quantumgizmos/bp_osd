@@ -17,7 +17,6 @@ osd_options = {
     "channel_update": None,
     "seed": 42,
     "max_iter": 0,
-    "output_file": "test.json",
 }
 
 lk = css_decode_sim(hx=qcode.hx, hz=qcode.hz, **osd_options)

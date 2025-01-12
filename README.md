@@ -1,4 +1,3 @@
-
 # BP+OSD: A decoder for quantum LDPC codes 
 A Python library implementing belief propagation with ordered statistics post-processing for decoding sparse quantum LDPC codes as described in [arXiv:2005.07016](https://arxiv.org/abs/2005.07016). Note, this library has recently been completly rewritten using Python and Cython. The bulk of the code now resides in the [LDPC](https://github.com/quantumgizmos/ldpc) repository. The original C++ version can be found in the `cpp_version` branch of this repository.
 
@@ -54,12 +53,15 @@ The `bposd.css.css_code` class can be used to create a CSS code from two classic
 ```python
 from ldpc.codes import hamming_code
 from bposd.css import css_code
-h=hamming_code(3) #Hamming code parity check matrix
-steane_code=css_code(hx=h,hz=h) #create Steane code where both hx and hz are Hamming codes
+
+h = hamming_code(3)  # Hamming code parity check matrix
+steane_code = css_code(
+    hx=h, hz=h
+)  # create Steane code where both hx and hz are Hamming codes
 print("Hx")
-print(steane_code.hx)
+print(steane_code.hx.toarray())
 print("Hz")
-print(steane_code.hz)
+print(steane_code.hz.toarray())
 ```
 
     Hx
@@ -77,9 +79,9 @@ The `bposd.css.css_code` class automatically computes the logical operators of t
 
 ```python
 print("Lx Logical")
-print(steane_code.lx)
+print(steane_code.lx.toarray())
 print("Lz Logical")
-print(steane_code.lz)
+print(steane_code.lz.toarray())
 ```
 
     Lx Logical
@@ -95,13 +97,13 @@ Not all combinations of the `hx` and `hz` matrices will produce a valid CSS code
 steane_code.test()
 ```
 
-    <Unnamed CSS code>, (3,4)-[[7,1,nan]]
+    <Unnamed CSS code>
      -Block dimensions: Pass
      -PCMs commute hz@hx.T==0: Pass
      -PCMs commute hx@hz.T==0: Pass
-     -lx \in ker{hz} AND lz \in ker{hx}: Pass
+     -lx \\in ker{hz} AND lz \\in ker{hx}: Pass
      -lx and lz anticommute: Pass
-     -<Unnamed CSS code> is a valid CSS code w/ params (3,4)-[[7,1,nan]]
+     -<Unnamed CSS code> is a valid CSS code w/ params [7,1,nan]
 
 
 
@@ -117,17 +119,17 @@ As an example of a code that isn't valid, consider the case when `hx` and `hz` a
 ```python
 from ldpc.codes import rep_code
 
-hx=hz=rep_code(7)
-qcode=css_code(hx,hz)
+hx = hz = rep_code(7)
+qcode = css_code(hx, hz)
 qcode.test()
 ```
 
-    <Unnamed CSS code>, (2,2)-[[7,-5,nan]]
+    <Unnamed CSS code>
      -Block dimensions incorrect
      -PCMs commute hz@hx.T==0: Fail
      -PCMs commute hx@hz.T==0: Fail
-     -lx \in ker{hz} AND lz \in ker{hx}: Pass
-     -lx and lz anitcommute: Fail
+     -lx \\in ker{hz} AND lz \\in ker{hx}: Pass
+     -lx and lz anticommute: Fail
 
 
 
@@ -145,18 +147,21 @@ The hypergraph product can be used to construct a valid CSS code from any pair o
 ```python
 from ldpc.codes import rep_code
 from bposd.hgp import hgp
-h=rep_code(3)
-surface_code=hgp(h1=h,h2=h,compute_distance=True) #nb. set compute_distance=False for larger codes
+
+h = rep_code(3)
+surface_code = hgp(
+    h1=h, h2=h, compute_distance=True
+)  # nb. set compute_distance=False for larger codes
 surface_code.test()
 ```
 
-    <Unnamed CSS code>, (2,4)-[[13,1,3]]
+    <Unnamed CSS code>
      -Block dimensions: Pass
      -PCMs commute hz@hx.T==0: Pass
      -PCMs commute hx@hz.T==0: Pass
-     -lx \in ker{hz} AND lz \in ker{hx}: Pass
+     -lx \\in ker{hz} AND lz \\in ker{hx}: Pass
      -lx and lz anticommute: Pass
-     -<Unnamed CSS code> is a valid CSS code w/ params (2,4)-[[13,1,3]]
+     -<Unnamed CSS code> is a valid CSS code w/ params [13,1,3]
 
 
 
@@ -173,40 +178,43 @@ BP+OSD decoding is useful for codes that do not perform well under standard-BP. 
 
 ```python
 import numpy as np
-from ldpc import bposd_decoder
+from ldpc import BpOsdDecoder
 
-bpd=bposd_decoder(
-    surface_code.hz,#the parity check matrix
+bpd = BpOsdDecoder(
+    surface_code.hz,  # the parity check matrix
     error_rate=0.05,
-    channel_probs=[None], #assign error_rate to each qubit. This will override "error_rate" input variable
-    max_iter=surface_code.N, #the maximum number of iterations for BP)
+    channel_probs=[
+        None
+    ],  # assign error_rate to each qubit. This will override "error_rate" input variable
+    max_iter=surface_code.N,  # the maximum number of iterations for BP)
     bp_method="ms",
-    ms_scaling_factor=0, #min sum scaling factor. If set to zero the variable scaling factor method is used
-    osd_method="osd_cs", #the OSD method. Choose from:  1) "osd_e", "osd_cs", "osd0"
-    osd_order=7 #the osd search depth
-    )
+    ms_scaling_factor=0,  # min sum scaling factor. If set to zero the variable scaling factor method is used
+    osd_method="osd_cs",  # the OSD method. Choose from:  1) "osd_e", "osd_cs", "osd0"
+    osd_order=7,  # the osd search depth
+)
 ```
 
 We can then decode by passing a syndrome to the `bposd.bposd_decoder.decode` method:
 
 
 ```python
-error=np.zeros(surface_code.N).astype(int)
-error[[5,12]]=1
-syndrome=surface_code.hz@error %2
+error = np.zeros(surface_code.N).astype(int)
+error[[5, 12]] = 1
+syndrome = surface_code.hz @ error % 2
 bpd.decode(syndrome)
 
 print("Error")
 print(error)
 print("BP+OSD Decoding")
 print(bpd.osdw_decoding)
-#Decoding is successful if the residual error commutes with the logical operators
-residual_error=(bpd.osdw_decoding+error) %2
-a=(surface_code.lz@residual_error%2).any()
-if a: a="Yes"
-else: a="No"
+# Decoding is successful if the residual error commutes with the logical operators
+residual_error = (bpd.osdw_decoding + error) % 2
+a = (surface_code.lz @ residual_error % 2).any()
+if a:
+    a = "Yes"
+else:
+    a = "No"
 print(f"Logical Error: {a}\n")
-
 ```
 
     Error
